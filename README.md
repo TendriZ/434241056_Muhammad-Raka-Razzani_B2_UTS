@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # E-Ticketing Helpdesk - Mobile Application
 
 Aplikasi mobile Flutter untuk mengelola tiket support/helpdesk dengan fitur role-based access control dan real-time updates.
