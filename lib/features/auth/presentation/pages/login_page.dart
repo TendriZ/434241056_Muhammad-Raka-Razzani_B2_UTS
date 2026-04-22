@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
+import '../../../profile/presentation/providers/profile_provider.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -30,6 +31,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               username: _usernameController.text,
               password: _passwordController.text,
             );
+
+        // Jangan lupa invalidate profile provider agar tidak nyangkut cache user sebelumnya
+        ref.invalidate(userProfileProvider);
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

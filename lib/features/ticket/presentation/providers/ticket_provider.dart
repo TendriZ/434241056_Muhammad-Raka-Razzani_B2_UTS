@@ -33,8 +33,25 @@ final ticketsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
 // Provider untuk baca detail tiket secara spesifik
 final ticketDetailProvider = FutureProvider.family<Map<String, dynamic>?, String>((ref, ticketId) async {
   final supabase = ref.watch(supabaseClientProvider);
-  final response = await supabase.from('tickets').select().eq('id', ticketId).maybeSingle();
-  return response;
+  final ticket = await supabase.from('tickets').select().eq('id', ticketId).maybeSingle();
+
+  if (ticket == null) return null;
+
+  final ticketData = Map<String, dynamic>.from(ticket);
+
+  final assignedTo = ticketData['assigned_to'];
+  if (assignedTo != null) {
+    final assignee = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('id', assignedTo)
+        .maybeSingle();
+    ticketData['assigned_to_name'] = assignee?['name'];
+  } else {
+    ticketData['assigned_to_name'] = null;
+  }
+
+  return ticketData;
 });
 
 // Provider untuk menghitung Statistik secara otomatis dari tabel

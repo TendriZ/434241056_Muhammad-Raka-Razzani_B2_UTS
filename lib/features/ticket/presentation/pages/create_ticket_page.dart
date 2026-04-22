@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../../core/services/supabase_service.dart';
 import '../providers/ticket_provider.dart';
 
@@ -17,8 +19,8 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
   final _descController = TextEditingController();
   bool _isLoading = false;
 
-  // State untuk menyimpan file yang dipilih
   final List<({String name, List<int> bytes})> _attachments = [];
+  final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void dispose() {
@@ -27,7 +29,51 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
     super.dispose();
   }
 
-  // Buka file picker (galeri/file manager)
+  // ─── Buka Kamera (FR-005.2) ───────────────────────────────────────────────
+  Future<void> _openCamera() async {
+    try {
+      final XFile? photo = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 80,
+        maxWidth: 1920,
+      );
+
+      if (photo != null) {
+        final bytes = await photo.readAsBytes();
+        final sizeInMB = bytes.length / (1024 * 1024);
+
+        if (sizeInMB > 10) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Foto terlalu besar. Maksimal 10MB')),
+            );
+          }
+          return;
+        }
+
+        setState(() {
+          _attachments.add((name: photo.name, bytes: bytes));
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Foto berhasil diambil!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal membuka kamera: $e')),
+        );
+      }
+    }
+  }
+
+  // ─── Buka File Manager / Galeri (FR-005.2) ───────────────────────────────
   Future<void> _pickFiles() async {
     try {
       final result = await FilePicker.platform.pickFiles(
@@ -38,13 +84,16 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
       );
 
       if (result != null) {
+        int addedCount = 0;
         for (var file in result.files) {
           final sizeInMB = file.size / (1024 * 1024);
 
           if (sizeInMB > 10) {
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('File "${file.name}" terlalu besar. Maksimal 10MB')),
+                SnackBar(
+                  content: Text('File "${file.name}" terlalu besar. Maksimal 10MB'),
+                ),
               );
             }
             continue;
@@ -54,12 +103,13 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
           setState(() {
             _attachments.add((name: file.name, bytes: bytes));
           });
+          addedCount++;
         }
 
-        if (_attachments.isNotEmpty && mounted) {
+        if (addedCount > 0 && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${_attachments.length} file dipilih'),
+              content: Text('$addedCount file berhasil dipilih'),
               backgroundColor: Colors.green,
             ),
           );
@@ -78,6 +128,7 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
     setState(() => _attachments.removeAt(index));
   }
 
+  // ─── Submit Tiket ─────────────────────────────────────────────────────────
   Future<void> _submitTicket() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -86,7 +137,6 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
       final supabase = ref.read(supabaseClientProvider);
       final userId = supabase.auth.currentUser!.id;
 
-      // Insert tiket
       final ticketResponse = await supabase.from('tickets').insert({
         'user_id': userId,
         'title': _titleController.text.trim(),
@@ -96,17 +146,26 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
 
       final ticketId = ticketResponse['id'].toString();
 
-      // Upload attachments jika ada
-      for (var attachment in _attachments) {
+      // Mulai upload file pertama (jika ada) dan update ke tabel `tickets` kolom `image_url`
+      if (_attachments.isNotEmpty) {
         try {
+          final attachment = _attachments.first; // Ambil file pertama saja sebagai representasi utama
           final timestamp = DateTime.now().millisecondsSinceEpoch;
           final filePath = 'tickets/$ticketId/$timestamp-${attachment.name}';
 
           await supabase.storage
               .from('ticket-attachments')
               .uploadBinary(filePath, attachment.bytes as dynamic);
+              
+          // Dapatkan public URL
+          final imageUrl = supabase.storage.from('ticket-attachments').getPublicUrl(filePath);
+
+          // Update data tiket yang baru saja dibuat dengan URL gambar
+          await supabase.from('tickets').update({
+            'image_url': imageUrl,
+          }).eq('id', ticketId);
+
         } catch (uploadError) {
-          // Lanjutkan meski upload gagal, tiket tetap tersimpan
           debugPrint('Upload attachment gagal: $uploadError');
         }
       }
@@ -152,7 +211,9 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                   prefixIcon: Icon(Icons.title),
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty) return 'Judul tidak boleh kosong';
+                  if (value == null || value.isEmpty) {
+                    return 'Judul tidak boleh kosong';
+                  }
                   return null;
                 },
               ),
@@ -168,20 +229,21 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                   alignLabelWithHint: true,
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty) return 'Sertakan deskripsi masalah';
+                  if (value == null || value.isEmpty) {
+                    return 'Sertakan deskripsi masalah';
+                  }
                   return null;
                 },
               ),
               const SizedBox(height: 24),
 
-              // Section Upload
               const Text(
                 'Unggah Laporan / Bukti (FR-005.2)',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const SizedBox(height: 12),
 
-              // Preview file yang sudah dipilih
+              // Preview file terpilih
               if (_attachments.isNotEmpty) ...[
                 Container(
                   decoration: BoxDecoration(
@@ -217,11 +279,13 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(fontSize: 13)),
                         subtitle: Text(
-                            '${(file.bytes.length / 1024).toStringAsFixed(1)} KB',
-                            style: const TextStyle(fontSize: 11)),
+                          '${(file.bytes.length / 1024).toStringAsFixed(1)} KB',
+                          style: const TextStyle(fontSize: 11),
+                        ),
                         trailing: IconButton(
                           icon: const Icon(Icons.close, color: Colors.red, size: 18),
                           onPressed: () => _removeAttachment(index),
+                          tooltip: 'Hapus file',
                         ),
                       );
                     },
@@ -230,7 +294,7 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                 const SizedBox(height: 12),
               ],
 
-              // Area upload kosong jika belum ada file
+              // Area kosong
               if (_attachments.isEmpty)
                 Container(
                   height: 100,
@@ -252,9 +316,25 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                 ),
               const SizedBox(height: 12),
 
-              // Tombol pilih file (menggantikan Buka Kamera & Pilih Galeri)
+              // Tombol Kamera & Galeri
               Row(
                 children: [
+                  // Tombol Kamera
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _openCamera,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue.shade50,
+                        foregroundColor: Colors.blue.shade700,
+                        elevation: 0,
+                      ),
+                      icon: const Icon(Icons.camera_alt),
+                      label: const Text('Buka Kamera'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+
+                  // Tombol Pilih File/Galeri — muncul di semua platform
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: _pickFiles,
@@ -263,30 +343,28 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                         foregroundColor: Colors.blue.shade700,
                         elevation: 0,
                       ),
-                      icon: const Icon(Icons.attach_file),
-                      label: const Text('Pilih File'),
+                      icon: const Icon(Icons.photo_library),
+                      label: Text(kIsWeb ? 'Pilih File' : 'Pilih Galeri'),
                     ),
                   ),
-                  if (_attachments.isNotEmpty) ...[
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () => setState(() => _attachments.clear()),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red.shade50,
-                          foregroundColor: Colors.red.shade700,
-                          elevation: 0,
-                        ),
-                        icon: const Icon(Icons.delete_outline),
-                        label: const Text('Hapus Semua'),
-                      ),
-                    ),
-                  ],
                 ],
               ),
+
+              if (_attachments.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                TextButton.icon(
+                  onPressed: () => setState(() => _attachments.clear()),
+                  icon: const Icon(Icons.delete_outline, color: Colors.red, size: 16),
+                  label: const Text('Hapus Semua File',
+                      style: TextStyle(color: Colors.red, fontSize: 12)),
+                ),
+              ],
+
               const SizedBox(height: 8),
               Text(
-                'Format: JPG, PNG, GIF, PDF, DOC (Maks. 10MB)',
+                kIsWeb
+                    ? 'Format: JPG, PNG, GIF, PDF, DOC (Maks. 10MB per file)'
+                    : 'Kamera atau pilih dari galeri (Maks. 10MB per file)',
                 style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
                 textAlign: TextAlign.center,
               ),
@@ -303,9 +381,9 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Text('KIRIM TIKET',
-                        style: TextStyle(fontSize: 16)),
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('KIRIM TIKET', style: TextStyle(fontSize: 16)),
               ),
             ],
           ),

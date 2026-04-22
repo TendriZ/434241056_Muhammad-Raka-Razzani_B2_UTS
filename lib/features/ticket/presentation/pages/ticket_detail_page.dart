@@ -57,6 +57,38 @@ class TicketDetailPage extends ConsumerWidget {
                         const SizedBox(height: 8),
                         Text('Deskripsi: ${ticket['description']}'),
                         const SizedBox(height: 16),
+                        
+                        // Menampilkan Lampiran / Gambar
+                        if (ticket['image_url'] != null && ticket['image_url'].toString().isNotEmpty) ...[
+                          const Text(
+                            'Lampiran Bukti:',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                          const SizedBox(height: 8),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.network(
+                              ticket['image_url'],
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(8)
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.broken_image, color: Colors.red),
+                                    SizedBox(width: 8),
+                                    Text('Gagal memuat atau format tidak didukung (contoh: PDF).', style: TextStyle(fontSize: 12)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+
                         const Divider(),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -82,7 +114,7 @@ class TicketDetailPage extends ConsumerWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Ditugaskan ke: ${ticket['assigned_to'] ?? 'Belum ada'}',
+                                'Ditugaskan ke: ${ticket['assigned_to_name'] ?? 'Belum ada'}',
                                 style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                               TextButton.icon(
@@ -98,7 +130,7 @@ class TicketDetailPage extends ConsumerWidget {
                                     
                                     final List<dynamic> techs = await supabase
                                         .from('profiles')
-                                        .select('id, full_name, role')
+                                      .select('id, name, role')
                                         .inFilter('role', ['helpdesk', 'admin']);
                                     
                                     if (context.mounted) {
@@ -112,24 +144,25 @@ class TicketDetailPage extends ConsumerWidget {
                                               final t = techs[index];
                                               return ListTile(
                                                 leading: const Icon(Icons.person_pin),
-                                                title: Text(t['full_name'] ?? 'Tanpa Nama'),
+                                                title: Text(t['name'] ?? 'Tanpa Nama'),
                                                 subtitle: Text('Role: ${t['role']}'),
                                                 onTap: () async {
                                                   Navigator.pop(ctx);
                                                   try {
                                                     await supabase.from('tickets').update({
-                                                      'assigned_to': t['full_name']
+                                                      'assigned_to': t['id']
                                                     }).eq('id', ticketId);
                                                     
                                                     await supabase.from('ticket_history').insert({
                                                       'ticket_id': ticketId,
                                                       'user_id': supabase.auth.currentUser!.id,
                                                       'action': 'Assigned',
-                                                      'message': 'Tiket ditugaskan ke ${t['full_name']}',
+                                                      'message': 'Tiket ditugaskan ke ${t['name']}',
                                                     });
                                                     
                                                     ref.invalidate(ticketDetailProvider(ticketId));
                                                     ref.invalidate(ticketHistoryProvider(ticketId));
+                                                    ref.invalidate(ticketsProvider);
                                                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Teknisi berhasil di-assign')));
                                                   } catch (e) {
                                                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal assign: $e')));
