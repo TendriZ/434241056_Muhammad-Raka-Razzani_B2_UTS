@@ -14,5 +14,18 @@ final userProfileProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
       .eq('id', user.id)
       .maybeSingle(); // Karena satu user 1 profile
 
+  // Fetch total tiket yang dibuat oleh user
+  final ticketCountResponse = await supabase
+      .from('tickets')
+      .select('id')
+      .eq('user_id', user.id);
+
+  final ticketCount = ticketCountResponse != null ? (ticketCountResponse as List).length : 0;
+
+  // Gabungkan data profile dengan ticket count
+  if (response != null) {
+    response['ticket_count'] = ticketCount;
+  }
+
   return response;
 });
