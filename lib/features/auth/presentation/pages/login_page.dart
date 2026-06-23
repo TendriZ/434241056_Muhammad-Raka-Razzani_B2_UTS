@@ -179,27 +179,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           Align(
                             alignment: Alignment.centerRight,
                             child: TextButton(
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16)
-                                    ),
-                                    title: const Text('Reset Password', style: TextStyle(fontWeight: FontWeight.bold)),
-                                    content: const Text(
-                                      'Silakan hubungi tim Admin / Helpdesk pusat di admin@helpdesk.com untuk bantuan akun.',
-                                      style: TextStyle(height: 1.5),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(context),
-                                        child: const Text('Tutup', style: TextStyle(fontWeight: FontWeight.bold)),
-                                      )
-                                    ],
-                                  ),
-                                );
-                              },
+                              onPressed: () => context.push('/forgot-password'),
                               style: TextButton.styleFrom(
                                 foregroundColor: Colors.blueAccent,
                               ),

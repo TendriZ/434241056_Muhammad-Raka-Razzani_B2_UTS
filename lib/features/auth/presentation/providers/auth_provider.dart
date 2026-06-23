@@ -103,4 +103,30 @@ class AuthNotifier extends AsyncNotifier<User?> {
       state = AsyncError(e, st);
     }
   }
+
+  // Reset Password FR-004
+  Future<void> resetPassword({required String email}) async {
+    state = const AsyncLoading();
+    try {
+      await _supabase.auth.resetPasswordForEmail(email);
+      state = AsyncData(_supabase.auth.currentUser);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+      rethrow;
+    }
+  }
+
+  // Update Password (setelah dapat reset link)
+  Future<void> updatePassword({required String newPassword}) async {
+    state = const AsyncLoading();
+    try {
+      await _supabase.auth.updateUser(
+        UserAttributes(password: newPassword),
+      );
+      state = AsyncData(_supabase.auth.currentUser);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+      rethrow;
+    }
+  }
 }
