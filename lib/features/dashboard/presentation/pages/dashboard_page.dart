@@ -50,9 +50,10 @@ class DashboardPage extends ConsumerWidget {
                 childAspectRatio: 1.5,
                 children: [
                   _buildStatCard('Total Tiket', '${stats['total']}', Colors.blue),
-                  _buildStatCard('Menunggu', '${stats['pending']}', Colors.orange),
-                  _buildStatCard('Diproses', '${stats['on_progress']}', Colors.purple),
-                  _buildStatCard('Selesai', '${stats['resolved']}', Colors.green),
+                  _buildStatCard('Open (Pending)', '${stats['pending']}', Colors.orange),
+                  _buildStatCard('Assigned', '${stats['assigned']}', Colors.indigo),
+                  _buildStatCard('In Progress', '${stats['on_progress']}', Colors.purple),
+                  _buildStatCard('Closed', '${stats['resolved']}', Colors.green),
                 ],
               ),
             ),

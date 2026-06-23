@@ -58,10 +58,11 @@ final ticketDetailProvider = FutureProvider.family<Map<String, dynamic>?, String
 final ticketStatsProvider = FutureProvider<Map<String, int>>((ref) async {
 
   final tickets = await ref.watch(ticketsProvider.future);
-  
+
   int pending = 0;
   int onProgress = 0;
   int resolved = 0;
+  int assigned = 0; // FR-009: Count assigned tickets
 
   for (var t in tickets) {
     if (t['status'] == 'pending') {
@@ -71,13 +72,19 @@ final ticketStatsProvider = FutureProvider<Map<String, int>>((ref) async {
     } else if (t['status'] == 'resolved') {
       resolved++;
     }
+
+    // Count assigned tickets (assigned_to is not null)
+    if (t['assigned_to'] != null) {
+      assigned++;
+    }
   }
 
   return {
     'total': tickets.length,
-    'pending': pending,
-    'on_progress': onProgress,
-    'resolved': resolved,
+    'pending': pending,        // Open tickets
+    'assigned': assigned,      // Assigned tickets
+    'on_progress': onProgress, // In progress tickets
+    'resolved': resolved,      // Closed tickets
   };
 });
 
