@@ -214,8 +214,8 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
         backgroundColor: AppTheme.surface,
         elevation: AppTheme.elevationLevel1,
         leading: IconButton(
-          icon: const Icon(Icons.menu, color: AppTheme.onSurfaceVariant),
-          onPressed: () {},
+          icon: const Icon(Icons.arrow_back, color: AppTheme.onSurfaceVariant),
+          onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'IT Support',

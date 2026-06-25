@@ -52,6 +52,16 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
     }
   }
 
+  String _safeSubstring(String text, int maxLength) {
+    if (text.isEmpty) return text;
+    return text.length > maxLength ? text.substring(0, maxLength) : text;
+  }
+
+  String _capitalizeFirst(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + (text.length > 1 ? text.substring(1) : '');
+  }
+
   @override
   Widget build(BuildContext context) {
     final ticketsAsync = ref.watch(ticketsProvider);
@@ -279,7 +289,7 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
                                 Row(
                                   children: [
                                     Text(
-                                      '#${ticket['id']?.toString().substring(0, 8) ?? 'TK-000'}',
+                                      '#${_safeSubstring(ticket['id']?.toString() ?? '', 8) ?? 'TK-000'}',
                                       style: AppTheme.labelMedium.copyWith(
                                         color: AppTheme.onSurfaceVariant,
                                         letterSpacing: 1,
@@ -308,7 +318,7 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
                                             const Icon(Icons.info_outline, size: 12, color: AppTheme.priorityOnNormal),
                                           const SizedBox(width: 4),
                                           Text(
-                                            priority[0].toUpperCase() + priority.substring(1),
+                                            _capitalizeFirst(priority),
                                             style: AppTheme.labelMedium.copyWith(
                                               color: priorityTextColor,
                                             ),

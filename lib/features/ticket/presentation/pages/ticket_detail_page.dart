@@ -4,6 +4,12 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
 import '../providers/ticket_provider.dart';
 
+// Helper function for safe substring
+String _safeUserIdSubstring(String? userId) {
+  if (userId == null || userId.isEmpty) return 'Unknown';
+  return userId.length > 8 ? userId.substring(0, 8) : userId;
+}
+
 class TicketDetailPage extends ConsumerWidget {
   final String ticketId;
 
@@ -24,7 +30,7 @@ class TicketDetailPage extends ConsumerWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          '#INC-2023-${ticketId.substring(0, 6)}',
+          '#INC-2023-${ticketId.length > 6 ? ticketId.substring(0, 6) : ticketId}',
           style: AppTheme.titleMedium.copyWith(color: AppTheme.primary),
         ),
         actions: [
@@ -135,7 +141,7 @@ class TicketDetailPage extends ConsumerWidget {
                                 // Reporter
                                 _buildMetaInfo(
                                   Icons.person,
-                                  'Pelapor: ${ticket['user_id']?.toString().substring(0, 8)}...',
+                                  'Pelapor: ${_safeUserIdSubstring(ticket['user_id']?.toString())}...',
                                 ),
                               ],
                             ),
@@ -603,7 +609,7 @@ class _TicketTimelineWidget extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                log['user_id']?.toString().substring(0, 8) ?? 'User',
+                _safeUserIdSubstring(log['user_id']?.toString()) ?? 'User',
                 style: AppTheme.labelLarge.copyWith(
                   color: AppTheme.onSurface,
                   fontWeight: FontWeight.w500,
