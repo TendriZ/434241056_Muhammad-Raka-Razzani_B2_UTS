@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../providers/notification_provider.dart';
 
 class NotificationPage extends ConsumerWidget {
@@ -9,25 +10,34 @@ class NotificationPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notificationState = ref.watch(notificationProvider);
-    final notifications = notificationState.notifications;
-    final unreadCount = notificationState.unreadCount;
 
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('Notifikasi'),
+        backgroundColor: AppTheme.surface,
+        elevation: AppTheme.elevationLevel1,
+        title: Text(
+          'Notifikasi',
+          style: AppTheme.titleLarge.copyWith(color: AppTheme.primary),
+        ),
         actions: [
-          if (notifications.isNotEmpty) ...[
+          if (notificationState.notifications.isNotEmpty) ...[
             TextButton(
               onPressed: () {
                 ref.read(notificationProvider.notifier).markAllAsRead();
               },
+              style: TextButton.styleFrom(
+                foregroundColor: AppTheme.primary,
+              ),
               child: Text(
-                'Tandai Semua Dibaca',
-                style: TextStyle(color: Colors.white, fontSize: 13),
+                'Tandai Semua',
+                style: AppTheme.labelLarge.copyWith(
+                  color: AppTheme.primary,
+                ),
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.delete_outline),
+              icon: const Icon(Icons.delete_outline, color: AppTheme.onSurfaceVariant),
               onPressed: () {
                 _showClearDialog(context, ref);
               },
@@ -39,20 +49,33 @@ class NotificationPage extends ConsumerWidget {
       body: Column(
         children: [
           // Unread Count Banner
-          if (unreadCount > 0)
+          if (notificationState.unreadCount > 0)
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              color: Colors.blue.shade50,
+              padding: const EdgeInsets.all(AppTheme.spacingMd),
+              margin: const EdgeInsets.all(AppTheme.spacingMd),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryContainer.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                border: Border.all(
+                  color: AppTheme.primaryContainer.withValues(alpha: 0.3),
+                ),
+              ),
               child: Row(
                 children: [
-                  Icon(Icons.notifications_active, color: Colors.blue.shade700, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    '$unreadCount notifikasi belum dibaca',
-                    style: TextStyle(
-                      color: Colors.blue.shade700,
-                      fontWeight: FontWeight.w500,
+                  Icon(
+                    Icons.notifications_active,
+                    color: AppTheme.primary,
+                    size: 20,
+                  ),
+                  const SizedBox(width: AppTheme.spacingSm),
+                  Expanded(
+                    child: Text(
+                      '${notificationState.unreadCount} notifikasi belum dibaca',
+                      style: AppTheme.bodyMedium.copyWith(
+                        color: AppTheme.primary,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ],
@@ -61,13 +84,16 @@ class NotificationPage extends ConsumerWidget {
 
           // Notifications List
           Expanded(
-            child: notifications.isEmpty
+            child: notificationState.notifications.isEmpty
                 ? _buildEmptyState()
                 : ListView.builder(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    itemCount: notifications.length,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacingMd,
+                      vertical: AppTheme.spacingSm,
+                    ),
+                    itemCount: notificationState.notifications.length,
                     itemBuilder: (context, index) {
-                      final notification = notifications[index];
+                      final notification = notificationState.notifications[index];
                       return _buildNotificationCard(context, ref, notification);
                     },
                   ),
@@ -85,23 +111,21 @@ class NotificationPage extends ConsumerWidget {
           Icon(
             Icons.notifications_none,
             size: 80,
-            color: Colors.grey.shade400,
+            color: AppTheme.onSurfaceVariant,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.spacingLg),
           Text(
             'Belum Ada Notifikasi',
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.grey.shade600,
+            style: AppTheme.titleMedium.copyWith(
+              color: AppTheme.onSurface,
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppTheme.spacingSm),
           Text(
             'Notifikasi akan muncul di sini',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade500,
+            style: AppTheme.bodyMedium.copyWith(
+              color: AppTheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -116,22 +140,37 @@ class NotificationPage extends ConsumerWidget {
   ) {
     final isRead = notification.isRead;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      elevation: isRead ? 0 : 2,
-      color: isRead ? Colors.transparent : Colors.white,
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppTheme.spacingSm),
+      decoration: BoxDecoration(
+        color: isRead ? AppTheme.surfaceContainerLow : AppTheme.surface,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+        border: Border.all(
+          color: isRead
+              ? AppTheme.outlineVariant.withValues(alpha: 0.5)
+              : AppTheme.primaryContainer.withValues(alpha: 0.3),
+          width: 1,
+        ),
+        boxShadow: isRead
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+      ),
       child: InkWell(
         onTap: () {
-          // Mark as read
           ref.read(notificationProvider.notifier).markAsRead(notification.id);
-
-          // Navigate to ticket detail if ticketId exists
           if (notification.ticketId != null) {
             context.push('/ticket/detail/${notification.ticketId}');
           }
         },
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppTheme.spacingMd),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -140,16 +179,20 @@ class NotificationPage extends ConsumerWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: isRead ? Colors.grey.shade200 : Colors.blue.shade100,
-                  shape: BoxShape.circle,
+                  color: isRead
+                      ? AppTheme.surfaceContainerHigh
+                      : AppTheme.primaryContainer.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                 ),
                 child: Icon(
                   _getNotificationIcon(notification.title),
-                  color: isRead ? Colors.grey.shade600 : Colors.blue.shade700,
+                  color: isRead
+                      ? AppTheme.onSurfaceVariant
+                      : AppTheme.primary,
+                  size: 24,
                 ),
               ),
-
-              const SizedBox(width: 12),
+              const SizedBox(width: AppTheme.spacingMd),
 
               // Notification Content
               Expanded(
@@ -158,25 +201,25 @@ class NotificationPage extends ConsumerWidget {
                   children: [
                     Text(
                       notification.title,
-                      style: TextStyle(
-                        fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
-                        fontSize: 15,
+                      style: AppTheme.titleSmall.copyWith(
+                        color: AppTheme.onSurface,
+                        fontWeight: isRead ? FontWeight.normal : FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       notification.message,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey.shade700,
+                      style: AppTheme.bodyMedium.copyWith(
+                        color: AppTheme.onSurfaceVariant,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppTheme.spacingSm),
                     Text(
                       _formatTime(notification.createdAt),
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade500,
+                      style: AppTheme.labelSmall.copyWith(
+                        color: AppTheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -186,11 +229,17 @@ class NotificationPage extends ConsumerWidget {
               // Unread Indicator
               if (!isRead)
                 Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: Colors.blue,
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary,
                     shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.primary.withValues(alpha: 0.4),
+                        blurRadius: 4,
+                      ),
+                    ],
                   ),
                 ),
             ],
@@ -235,11 +284,17 @@ class NotificationPage extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+        ),
         title: const Text('Hapus Semua Notifikasi'),
         content: const Text('Apakah Anda yakin ingin menghapus semua notifikasi?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
+            style: TextButton.styleFrom(
+              foregroundColor: AppTheme.onSurfaceVariant,
+            ),
             child: const Text('Batal'),
           ),
           TextButton(
@@ -247,9 +302,12 @@ class NotificationPage extends ConsumerWidget {
               ref.read(notificationProvider.notifier).clearAll();
               Navigator.of(context).pop();
             },
+            style: TextButton.styleFrom(
+              foregroundColor: AppTheme.error,
+            ),
             child: const Text(
               'Hapus',
-              style: TextStyle(color: Colors.red),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],

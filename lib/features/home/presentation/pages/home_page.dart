@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../../../../core/theme/app_theme.dart';
 import '../../../dashboard/presentation/pages/dashboard_page.dart';
 import '../../../ticket/presentation/pages/ticket_list_page.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
@@ -29,6 +29,17 @@ class _HomePageState extends State<HomePage> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
+        backgroundColor: AppTheme.surface,
+        selectedItemColor: AppTheme.primaryContainer,
+        unselectedItemColor: AppTheme.onSurfaceVariant,
+        selectedLabelStyle: AppTheme.labelSmall.copyWith(
+          color: AppTheme.primaryContainer,
+        ),
+        unselectedLabelStyle: AppTheme.labelSmall.copyWith(
+          color: AppTheme.onSurfaceVariant,
+        ),
+        type: BottomNavigationBarType.fixed,
+        elevation: AppTheme.elevationLevel1,
         onTap: (index) {
           setState(() {
             _currentIndex = index;

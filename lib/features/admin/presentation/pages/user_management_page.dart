@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/services/supabase_service.dart';
+import '../../../../core/theme/app_theme.dart';
 
 // Provider untuk mengambil daftar users dengan filter
 final usersProvider = FutureProvider.autoDispose.family<List<Map<String, dynamic>>, String?>((ref, filterRole) async {
@@ -39,13 +40,20 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
     final supabase = ref.watch(supabaseClientProvider);
 
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('Manajemen Pengguna'),
+        backgroundColor: AppTheme.surface,
+        elevation: AppTheme.elevationLevel1,
         automaticallyImplyLeading: false,
+        title: Text(
+          'Manajemen Pengguna',
+          style: AppTheme.titleLarge.copyWith(color: AppTheme.primary),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh, color: AppTheme.onSurfaceVariant),
             onPressed: () => ref.invalidate(usersProvider(_selectedRoleFilter)),
+            tooltip: 'Refresh',
           ),
         ],
       ),
@@ -53,8 +61,13 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
         children: [
           // Filter & Search Section
           Container(
-            padding: const EdgeInsets.all(16),
-            color: Colors.blue.shade50,
+            padding: const EdgeInsets.all(AppTheme.spacingMd),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryContainer.withValues(alpha: 0.05),
+              border: Border(
+                bottom: BorderSide(color: AppTheme.outlineVariant),
+              ),
+            ),
             child: Column(
               children: [
                 // Role Filter Chips
@@ -64,7 +77,7 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
                     children: ['All', 'admin', 'helpdesk', 'user'].map((role) {
                       final isSelected = _selectedRoleFilter == role;
                       return Padding(
-                        padding: const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsets.only(right: AppTheme.spacingSm),
                         child: FilterChip(
                           label: Text(role == 'All' ? 'Semua' : role.toUpperCase()),
                           selected: isSelected,
@@ -73,27 +86,39 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
                               _selectedRoleFilter = role;
                             });
                           },
-                          backgroundColor: Colors.white,
-                          selectedColor: Colors.blue,
-                          labelStyle: TextStyle(
-                            color: isSelected ? Colors.white : Colors.black87,
+                          backgroundColor: AppTheme.surface,
+                          selectedColor: AppTheme.primaryContainer,
+                          checkmarkColor: AppTheme.onPrimary,
+                          labelStyle: AppTheme.labelMedium.copyWith(
+                            color: isSelected ? AppTheme.onPrimary : AppTheme.onSurface,
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                          ),
+                          side: BorderSide(
+                            color: isSelected ? AppTheme.primaryContainer : AppTheme.outlineVariant,
                           ),
                         ),
                       );
                     }).toList(),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppTheme.spacingMd),
+
                 // Search Field
                 TextField(
                   controller: _searchController,
+                  style: AppTheme.bodyLarge.copyWith(color: AppTheme.onSurface),
                   decoration: InputDecoration(
                     hintText: 'Cari berdasarkan nama atau username...',
-                    prefixIcon: const Icon(Icons.search),
+                    hintStyle: AppTheme.bodyMedium.copyWith(
+                      color: AppTheme.onSurfaceVariant,
+                    ),
+                    prefixIcon: const Icon(Icons.search, color: AppTheme.onSurfaceVariant),
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(Icons.clear),
+                            icon: const Icon(Icons.clear, color: AppTheme.onSurfaceVariant),
                             onPressed: () {
                               _searchController.clear();
                               setState(() {
@@ -103,10 +128,22 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
                           )
                         : null,
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: AppTheme.surface,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                      borderSide: const BorderSide(color: AppTheme.outline),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                      borderSide: const BorderSide(color: AppTheme.outline),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                      borderSide: const BorderSide(color: AppTheme.primary, width: 2),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacingMd,
+                      vertical: 14,
                     ),
                   ),
                   onChanged: (value) {
@@ -123,7 +160,12 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
           Expanded(
             child: usersAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => Center(child: Text('Terjadi Kesalahan: $err')),
+              error: (err, stack) => Center(
+                child: Text(
+                  'Terjadi Kesalahan: $err',
+                  style: AppTheme.bodyMedium.copyWith(color: AppTheme.error),
+                ),
+              ),
               data: (users) {
                 // Filter by search query
                 final filteredUsers = _searchQuery.isEmpty
@@ -135,14 +177,34 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
                       }).toList();
 
                 if (filteredUsers.isEmpty) {
-                  return const Center(child: Text('Tidak ada pengguna ditemukan.'));
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search_off,
+                          size: 64,
+                          color: AppTheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(height: AppTheme.spacingMd),
+                        Text(
+                          'Tidak ada pengguna ditemukan',
+                          style: AppTheme.bodyMedium.copyWith(
+                            color: AppTheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
                 }
 
                 return RefreshIndicator(
                   onRefresh: () async {
                     ref.invalidate(usersProvider(_selectedRoleFilter));
                   },
+                  color: AppTheme.primary,
                   child: ListView.builder(
+                    padding: const EdgeInsets.all(AppTheme.spacingMd),
                     itemCount: filteredUsers.length,
                     itemBuilder: (context, index) {
                       final user = filteredUsers[index];
@@ -150,27 +212,62 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
                       final isCurrentAdmin = user['id'] == supabase.auth.currentUser?.id;
 
                       Color roleColor = currentRole == 'admin'
-                          ? Colors.redAccent
-                          : (currentRole == 'helpdesk' ? Colors.amber : Colors.blueGrey);
+                          ? AppTheme.error
+                          : (currentRole == 'helpdesk' ? AppTheme.secondary : AppTheme.primary);
 
-                      return Card(
-                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: AppTheme.spacingSm),
+                        decoration: BoxDecoration(
+                          color: AppTheme.surface,
+                          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                          border: Border.all(color: AppTheme.outlineVariant),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.03),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
                         child: ExpansionTile(
-                          leading: CircleAvatar(
-                            backgroundColor: roleColor.withValues(alpha: 0.2),
-                            child: Icon(Icons.person, color: roleColor),
+                          leading: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: roleColor.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                            ),
+                            child: Icon(Icons.person, color: roleColor, size: 22),
                           ),
                           title: Text(
                             user['full_name'] ?? 'Tanpa Nama',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            style: AppTheme.titleSmall.copyWith(
+                              color: AppTheme.onSurface,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                          subtitle: Text('@${user['username'] ?? 'username'}'),
+                          subtitle: Text(
+                            '@${user['username'] ?? 'username'}',
+                            style: AppTheme.bodyMedium.copyWith(
+                              color: AppTheme.onSurfaceVariant,
+                            ),
+                          ),
                           trailing: isCurrentAdmin
-                              ? Chip(
-                                  label: const Text('Anda', style: TextStyle(fontSize: 11)),
-                                  backgroundColor: Colors.green.shade100,
+                              ? Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppTheme.spacingSm,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.tertiaryContainer,
+                                    borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                                  ),
+                                  child: Text(
+                                    'Anda',
+                                    style: AppTheme.labelSmall.copyWith(
+                                      color: AppTheme.onTertiary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                 )
                               : Icon(
                                   Icons.more_vert,
@@ -179,7 +276,10 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
                           children: [
                             // Detail User
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppTheme.spacingMd,
+                                vertical: AppTheme.spacingSm,
+                              ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -194,17 +294,20 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
                                     currentRole.toUpperCase(),
                                     valueColor: roleColor,
                                   ),
-                                  const SizedBox(height: 16),
+                                  const SizedBox(height: AppTheme.spacingMd),
 
                                   // Role Change Buttons
                                   if (!isCurrentAdmin) ...[
-                                    const Text(
+                                    Text(
                                       'Ubah Role:',
-                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                      style: AppTheme.labelMedium.copyWith(
+                                        color: AppTheme.onSurface,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
-                                    const SizedBox(height: 8),
+                                    const SizedBox(height: AppTheme.spacingSm),
                                     Wrap(
-                                      spacing: 8,
+                                      spacing: AppTheme.spacingSm,
                                       children: ['user', 'helpdesk', 'admin'].map((role) {
                                         final isCurrent = currentRole == role;
                                         return ElevatedButton(
@@ -213,15 +316,30 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
                                               : () => _changeUserRole(user['id'], role),
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: isCurrent
-                                                ? Colors.grey.shade300
+                                                ? AppTheme.surfaceContainerHigh
                                                 : (role == 'admin'
-                                                    ? Colors.redAccent
+                                                    ? AppTheme.error
                                                     : (role == 'helpdesk'
-                                                        ? Colors.amber
-                                                        : Colors.blue)),
-                                            foregroundColor: isCurrent ? Colors.grey : Colors.white,
+                                                        ? AppTheme.secondary
+                                                        : AppTheme.primary)),
+                                            foregroundColor: isCurrent
+                                                ? AppTheme.onSurfaceVariant
+                                                : AppTheme.onPrimary,
+                                            elevation: AppTheme.elevationLevel1,
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: AppTheme.spacingMd,
+                                              vertical: AppTheme.spacingSm,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                                            ),
                                           ),
-                                          child: Text(role.toUpperCase()),
+                                          child: Text(
+                                            role.toUpperCase(),
+                                            style: AppTheme.labelSmall.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
                                         );
                                       }).toList(),
                                     ),
@@ -251,19 +369,17 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
           width: 80,
           child: Text(
             '$label:',
-            style: TextStyle(
-              color: Colors.grey.shade600,
-              fontSize: 13,
+            style: AppTheme.bodySmall.copyWith(
+              color: AppTheme.onSurfaceVariant,
             ),
           ),
         ),
         Expanded(
           child: Text(
             value,
-            style: TextStyle(
+            style: AppTheme.bodyMedium.copyWith(
               fontWeight: FontWeight.w500,
-              color: valueColor,
-              fontSize: 13,
+              color: valueColor ?? AppTheme.onSurface,
             ),
           ),
         ),
@@ -287,7 +403,11 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Role berhasil diubah menjadi $newRole'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.tertiaryContainer,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+            ),
           ),
         );
         ref.invalidate(usersProvider(_selectedRoleFilter));
@@ -298,7 +418,11 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Gagal mengubah role: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+            ),
           ),
         );
       }

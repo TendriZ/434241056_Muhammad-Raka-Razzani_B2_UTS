@@ -41,21 +41,33 @@ class NotificationState {
 
   NotificationState({required this.notifications})
       : unreadCount = notifications.where((n) => !n.isRead).length;
+
+  NotificationState copyWith({List<AppNotification>? notifications}) {
+    return NotificationState(
+      notifications: notifications ?? this.notifications,
+    );
+  }
 }
 
-// Notifier untuk notifikasi
-class NotificationNotifier extends StateNotifier<NotificationState> {
-  final SupabaseClient _supabase;
+// Notifier for notification state (Riverpod 3.x API)
+class NotificationNotifier extends Notifier<NotificationState> {
+  SupabaseClient? _supabase;
   RealtimeChannel? _channel;
+  RealtimeChannel? _historyChannel;
   StreamSubscription? _authSubscription;
 
-  NotificationNotifier(this._supabase) : super(NotificationState(notifications: [])) {
+  @override
+  NotificationState build() {
     _initialize();
+    return NotificationState(notifications: []);
   }
 
   void _initialize() {
+    final supabase = ref.read(supabaseClientProvider);
+    _supabase = supabase;
+
     // Listen untuk perubahan auth state
-    _authSubscription = _supabase.auth.onAuthStateChange.listen((data) {
+    _authSubscription = supabase.auth.onAuthStateChange.listen((data) {
       if (data.session != null) {
         // User logged in, subscribe to realtime updates
         _subscribeToTicketUpdates();
@@ -68,101 +80,127 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
     });
 
     // Jika sudah login saat inisialisasi
-    if (_supabase.auth.currentUser != null) {
+    if (supabase.auth.currentUser != null) {
       _subscribeToTicketUpdates();
       _loadNotificationHistory();
     }
   }
 
   void _subscribeToTicketUpdates() {
-    final userId = _supabase.auth.currentUser?.id;
+    final supabase = _supabase;
+    if (supabase == null) return;
+
+    final userId = supabase.auth.currentUser?.id;
     if (userId == null) return;
 
-    // Subscribe ke tiket yang berhubungan dengan user
-    _channel = _supabase.channel('ticket_updates:$userId');
+    try {
+      // Subscribe to ticket updates using correct Supabase API
+      _channel = supabase
+          .channel('public:tickets:$userId')
+          .onPostgresChanges(
+            event: PostgresChangeEvent.all,
+            schema: 'public',
+            table: 'tickets',
+            filter: PostgresChangeFilter(
+              type: PostgresChangeFilterType.eq,
+              column: 'user_id',
+              value: userId,
+            ),
+            callback: (payload) {
+              _handleTicketChange(payload);
+            },
+          )
+          .subscribe();
 
-    _channel!.on(
-      RealtimeListenEventType.postgres_changes,
-      channel: 'tickets',
-      event: '*',
-      schema: 'public',
-      table: 'tickets',
-      filter: RealtimeFilter.in('user_id', [userId]),
-      callback: (payload, [ref]) {
-        _handleTicketChange(payload);
-      },
-    ).subscribe();
-
-    // Juga subscribe ke ticket_history untuk update status/komentar
-    final historyChannel = _supabase.channel('ticket_history_updates:$userId');
-    historyChannel.on(
-      RealtimeListenEventType.postgres_changes,
-      channel: 'ticket_history',
-      event: 'INSERT',
-      schema: 'public',
-      table: 'ticket_history',
-      callback: (payload, [ref]) {
-        _handleTicketHistoryInsert(payload);
-      },
-    ).subscribe();
-  }
-
-  void _handleTicketChange(dynamic payload) {
-    final record = payload['record'] as Map<String, dynamic>;
-    final eventType = payload['eventType'] as String;
-
-    String title = '';
-    String message = '';
-
-    switch (eventType) {
-      case 'INSERT':
-        title = 'Tiket Baru Dibuat';
-        message = 'Tiket "${record['title']}" berhasil dibuat.';
-        break;
-      case 'UPDATE':
-        final oldStatus = payload['old_record']['status'];
-        final newStatus = record['status'];
-        if (oldStatus != newStatus) {
-          title = 'Status Tiket Diperbarui';
-          message = 'Tiket "${record['title']}" sekarang statusnya: $_formatStatus(newStatus)';
-        } else if (record['assigned_to'] != null && record['assigned_to'] != payload['old_record']['assigned_to']) {
-          title = 'Tiket Ditugaskan';
-          message = 'Tiket "${record['title']}" telah ditugaskan.';
-        } else {
-          return; // Skip update lain
-        }
-        break;
-      case 'DELETE':
-        title = 'Tiket Dihapus';
-        message = 'Tiket "${record['title']}" telah dihapus.';
-        break;
-      default:
-        return;
+      // Subscribe to ticket history
+      _historyChannel = supabase
+          .channel('public:ticket_history:$userId')
+          .onPostgresChanges(
+            event: PostgresChangeEvent.insert,
+            schema: 'public',
+            table: 'ticket_history',
+            callback: (payload) {
+              _handleTicketHistoryInsert(payload);
+            },
+          )
+          .subscribe();
+    } catch (e) {
+      if (kDebugMode) print('Error subscribing to realtime: $e');
     }
-
-    _addNotification(
-      title: title,
-      message: message,
-      ticketId: record['id'],
-    );
   }
 
-  void _handleTicketHistoryInsert(dynamic payload) {
-    final record = payload['record'] as Map<String, dynamic>;
-    final action = record['action'];
-    final message = record['message'];
+  void _handleTicketChange(PostgresChangePayload payload) {
+    try {
+      final eventType = payload.eventType;
+      final record = payload.newRecord as Map<String, dynamic>?;
 
-    // Cek apakah ini update status
-    if (action == 'Status Update' || action == 'Assigned') {
-      final userId = _supabase.auth.currentUser?.id;
-      // Hanya notifikasi jika bukan action sendiri
-      if (record['user_id'] != userId) {
-        _addNotification(
-          title: 'Update Tiket',
-          message: message,
-          ticketId: record['ticket_id'],
-        );
+      if (record == null) return;
+
+      String title = '';
+      String message = '';
+
+      switch (eventType) {
+        case PostgresChangeEvent.insert:
+          title = 'Tiket Baru Dibuat';
+          message = 'Tiket "${record['title']}" berhasil dibuat.';
+          break;
+        case PostgresChangeEvent.update:
+          final oldRecord = payload.oldRecord as Map<String, dynamic>?;
+          final oldStatus = oldRecord?['status'];
+          final newStatus = record['status'];
+          if (oldStatus != newStatus) {
+            title = 'Status Tiket Diperbarui';
+            message = 'Tiket "${record['title']}" sekarang statusnya: $_formatStatus(newStatus ?? '')';
+          } else if (record['assigned_to'] != null) {
+            title = 'Tiket Ditugaskan';
+            message = 'Tiket "${record['title']}" telah ditugaskan.';
+          } else {
+            return;
+          }
+          break;
+        case PostgresChangeEvent.delete:
+          title = 'Tiket Dihapus';
+          message = 'Tiket "${record['title']}" telah dihapus.';
+          break;
+        default:
+          return;
       }
+
+      _addNotification(
+        title: title,
+        message: message,
+        ticketId: record['id']?.toString(),
+      );
+    } catch (e) {
+      if (kDebugMode) print('Error handling ticket change: $e');
+    }
+  }
+
+  void _handleTicketHistoryInsert(PostgresChangePayload payload) {
+    try {
+      final record = payload.newRecord as Map<String, dynamic>?;
+      if (record == null) return;
+
+      final action = record['action'];
+      final message = record['message'];
+
+      // Cek apakah ini update status
+      if (action == 'Status Update' || action == 'Assigned') {
+        final supabase = _supabase;
+        if (supabase == null) return;
+
+        final userId = supabase.auth.currentUser?.id;
+        // Hanya notifikasi jika bukan action sendiri
+        if (record['user_id'] != userId) {
+          _addNotification(
+            title: 'Update Tiket',
+            message: message?.toString() ?? '',
+            ticketId: record['ticket_id']?.toString(),
+          );
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) print('Error handling ticket history: $e');
     }
   }
 
@@ -182,20 +220,23 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
 
   Future<void> _loadNotificationHistory() async {
     try {
-      final userId = _supabase.auth.currentUser?.id;
+      final supabase = _supabase;
+      if (supabase == null) return;
+
+      final userId = supabase.auth.currentUser?.id;
       if (userId == null) return;
 
       // Load history tiket terakhir untuk menampilkan notifikasi awal
-      final response = await _supabase
+      final response = await supabase
           .from('tickets')
           .select('id, title, status, updated_at')
           .eq('user_id', userId)
           .order('updated_at', ascending: false)
           .limit(10);
 
-      if (response != null) {
-        // Bisa ditambahkan logika untuk load history notifikasi
-        // Untuk sekarang kita mulai dengan list kosong
+      if (response != null && response is List) {
+        // For now we start with empty list
+        state = NotificationState(notifications: []);
       }
     } catch (e) {
       if (kDebugMode) print('Error loading notification history: $e');
@@ -224,10 +265,12 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
 
   void _unsubscribe() {
     _channel?.unsubscribe();
+    _historyChannel?.unsubscribe();
     _channel = null;
+    _historyChannel = null;
   }
 
-  String _formatStatus(String status) {
+  String _formatStatus(String? status) {
     switch (status) {
       case 'pending':
         return 'Menunggu';
@@ -236,20 +279,12 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
       case 'resolved':
         return 'Selesai';
       default:
-        return status;
+        return status ?? '';
     }
-  }
-
-  @override
-  void dispose() {
-    _unsubscribe();
-    _authSubscription?.cancel();
-    super.dispose();
   }
 }
 
-// Provider
-final notificationProvider = StateNotifierProvider<NotificationNotifier, NotificationState>((ref) {
-  final supabase = ref.watch(supabaseClientProvider);
-  return NotificationNotifier(supabase);
-});
+// Providers (Riverpod 3.x API)
+final notificationProvider = NotifierProvider<NotificationNotifier, NotificationState>(
+  NotificationNotifier.new,
+);

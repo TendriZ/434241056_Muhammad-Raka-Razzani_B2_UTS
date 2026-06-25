@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../dashboard/presentation/pages/dashboard_page.dart';
 import '../../../ticket/presentation/pages/ticket_list_page.dart';
 import '../../../admin/presentation/pages/user_management_page.dart';
@@ -30,9 +31,17 @@ class _AdminHomePageState extends State<AdminHomePage> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        selectedItemColor: Colors.redAccent.shade700,
-        unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed, // Fix animasi jika > 3 item
+        backgroundColor: AppTheme.surface,
+        selectedItemColor: AppTheme.error,
+        selectedLabelStyle: AppTheme.labelSmall.copyWith(
+          color: AppTheme.error,
+        ),
+        unselectedItemColor: AppTheme.onSurfaceVariant,
+        unselectedLabelStyle: AppTheme.labelSmall.copyWith(
+          color: AppTheme.onSurfaceVariant,
+        ),
+        type: BottomNavigationBarType.fixed,
+        elevation: AppTheme.elevationLevel1,
         onTap: (index) {
           setState(() {
             _currentIndex = index;
@@ -60,4 +69,3 @@ class _AdminHomePageState extends State<AdminHomePage> {
     );
   }
 }
-

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/services/supabase_service.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
 import '../providers/ticket_provider.dart';
 
@@ -15,424 +15,732 @@ class TicketDetailPage extends ConsumerWidget {
     final profileAsync = ref.watch(userProfileProvider);
 
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('Detail Tiket'),
+        backgroundColor: AppTheme.surface,
+        elevation: AppTheme.elevationLevel1,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppTheme.onSurfaceVariant),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          '#INC-2023-${ticketId.substring(0, 6)}',
+          style: AppTheme.titleMedium.copyWith(color: AppTheme.primary),
+        ),
+        actions: [
+          ticketAsync.whenOrNull(
+            data: (ticket) {
+              if (ticket != null) {
+                final status = ticket['status']?.toString() ?? 'pending';
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacingSm,
+                    vertical: 4,
+                  ),
+                  decoration: AppTheme.getStatusBadgeStyle(status),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _getStatusIcon(status),
+                        size: 14,
+                        color: AppTheme.getStatusTextColor(status),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _formatStatus(status),
+                        style: AppTheme.labelMedium.copyWith(
+                          color: AppTheme.getStatusTextColor(status),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              return const SizedBox();
+            },
+          ) ?? const SizedBox(),
+          IconButton(
+            icon: const Icon(Icons.more_vert, color: AppTheme.onSurfaceVariant),
+            onPressed: () {},
+          ),
+        ],
       ),
       body: ticketAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, _) => Center(child: Text('Error: $err')),
         data: (ticket) {
           if (ticket == null) {
-            return const Center(child: Text('Tiket tidak ditemukan.'));
+            return Center(
+              child: Text(
+                'Tiket tidak ditemukan',
+                style: AppTheme.bodyLarge.copyWith(color: AppTheme.onSurfaceVariant),
+              ),
+            );
           }
 
           final role = profileAsync.value?['role'] ?? 'user';
-          final canUpdateStatus = (role == 'admin' || role == 'helpdesk');
+          final priority = ticket['priority']?.toString() ?? 'normal';
+          final category = ticket['category']?.toString() ?? '-';
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Informasi Masalah',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'ID Tiket: $ticketId',
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Judul: ${ticket['title']}',
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        const SizedBox(height: 8),
-                        Text('Deskripsi: ${ticket['description']}'),
-                        const SizedBox(height: 16),
-                        
-                        // Menampilkan Lampiran / Gambar
-                        if (ticket['image_url'] != null && ticket['image_url'].toString().isNotEmpty) ...[
-                          const Text(
-                            'Lampiran Bukti:',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                          ),
-                          const SizedBox(height: 8),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.network(
-                              ticket['image_url'],
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade100,
-                                  borderRadius: BorderRadius.circular(8)
-                                ),
-                                child: const Row(
-                                  children: [
-                                    Icon(Icons.broken_image, color: Colors.red),
-                                    SizedBox(width: 8),
-                                    Text('Gagal memuat atau format tidak didukung (contoh: PDF).', style: TextStyle(fontSize: 12)),
-                                  ],
-                                ),
-                              ),
+          return Column(
+            children: [
+              // Main Content
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacingMd,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Main Info Card
+                      Container(
+                        margin: const EdgeInsets.only(bottom: AppTheme.spacingLg),
+                        padding: const EdgeInsets.all(AppTheme.spacingLg),
+                        decoration: BoxDecoration(
+                          color: AppTheme.surfaceContainerLowest,
+                          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                          border: Border.all(color: AppTheme.surfaceContainerHigh),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.03),
+                              blurRadius: 4,
                             ),
-                          ),
-                          const SizedBox(height: 16),
-                        ],
-
-                        const Divider(),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Status: ${ticket['status'].toString().toUpperCase()}', 
-                              style: TextStyle(
-                                color: ticket['status'] == 'pending' ? Colors.orange 
-                                     : ticket['status'] == 'on_progress' ? Colors.blue
-                                     : Colors.green,
-                                fontWeight: FontWeight.bold,
-                              )
-                            ),
-                            // Bagian Helpdesk & Admin Management (FR-009) Update Status
-                            if (canUpdateStatus)
-                              _StatusDropdownWidget(ticketId: ticketId, currentStatus: ticket['status'])
                           ],
                         ),
-                        // FR-006.4 Assign Tiket (Khusus Admin/Helpdesk)
-                        if (canUpdateStatus) ...[
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Ditugaskan ke: ${ticket['assigned_to_name'] ?? 'Belum ada'}',
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Title
+                            Text(
+                              ticket['title'] ?? 'Tanpa Judul',
+                              style: AppTheme.titleLarge.copyWith(
+                                color: AppTheme.onSurface,
+                                fontWeight: FontWeight.bold,
                               ),
-                              TextButton.icon(
-                                onPressed: () async {
-                                  // Mengambil daftar helpdesk/admin dari profiles table
-                                  final supabase = ref.read(supabaseClientProvider);
-                                  try {
-                                    showDialog(
-                                      context: context,
-                                      barrierDismissible: false,
-                                      builder: (_) => const Center(child: CircularProgressIndicator()),
-                                    );
-                                    
-                                    final List<dynamic> techs = await supabase
-                                        .from('profiles')
-                                      .select('id, name, role')
-                                        .inFilter('role', ['helpdesk', 'admin']);
-                                    
-                                    if (context.mounted) {
-                                      Navigator.pop(context); // Tutup loading
-                                      showModalBottomSheet(
-                                        context: context,
-                                        builder: (ctx) {
-                                          return ListView.builder(
-                                            itemCount: techs.length,
-                                            itemBuilder: (context, index) {
-                                              final t = techs[index];
-                                              return ListTile(
-                                                leading: const Icon(Icons.person_pin),
-                                                title: Text(t['name'] ?? 'Tanpa Nama'),
-                                                subtitle: Text('Role: ${t['role']}'),
-                                                onTap: () async {
-                                                  Navigator.pop(ctx);
-                                                  try {
-                                                    await supabase.from('tickets').update({
-                                                      'assigned_to': t['id']
-                                                    }).eq('id', ticketId);
-                                                    
-                                                    await supabase.from('ticket_history').insert({
-                                                      'ticket_id': ticketId,
-                                                      'user_id': supabase.auth.currentUser!.id,
-                                                      'action': 'Assigned',
-                                                      'message': 'Tiket ditugaskan ke ${t['name']}',
-                                                    });
-                                                    
-                                                    ref.invalidate(ticketDetailProvider(ticketId));
-                                                    ref.invalidate(ticketHistoryProvider(ticketId));
-                                                    ref.invalidate(ticketsProvider);
-                                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Teknisi berhasil di-assign')));
-                                                  } catch (e) {
-                                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal assign: $e')));
-                                                  }
-                                                }
-                                              );
-                                            }
-                                          );
-                                        }
-                                      );
-                                    }
-                                  } catch (e) {
-                                    if (context.mounted) {
-                                      Navigator.pop(context);
-                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal Load Teknisi: $e')));
-                                    }
-                                  }
-                                },
-                                icon: const Icon(Icons.person_add, size: 18),
-                                label: const Text('Assign Tiket'),
-                              )
+                            ),
+                            const SizedBox(height: AppTheme.spacingSm),
+
+                            // Meta Info
+                            Wrap(
+                              spacing: AppTheme.spacingLg,
+                              runSpacing: AppTheme.spacingMd,
+                              children: [
+                                // Date
+                                _buildMetaInfo(
+                                  Icons.calendar_today,
+                                  _formatDateTime(ticket['created_at']),
+                                ),
+                                // Reporter
+                                _buildMetaInfo(
+                                  Icons.person,
+                                  'Pelapor: ${ticket['user_id']?.toString().substring(0, 8)}...',
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: AppTheme.spacingMd),
+
+                            // Grid Info
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildInfoCard('Prioritas', _formatPriority(priority)),
+                                ),
+                                const SizedBox(width: AppTheme.spacingMd),
+                                Expanded(
+                                  child: _buildInfoCard('Kategori', category),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: AppTheme.spacingMd),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildInfoCard(
+                                    'Ditugaskan Kepada',
+                                    ticket['assigned_to_name'] ?? 'Belum ada',
+                                  ),
+                                ),
+                                const SizedBox(width: AppTheme.spacingMd),
+                                Expanded(
+                                  child: _buildInfoCard(
+                                    'Estimasi Selesai',
+                                    _formatDate(ticket['updated_at']),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Description Section
+                      Container(
+                        margin: const EdgeInsets.only(bottom: AppTheme.spacingLg),
+                        padding: const EdgeInsets.all(AppTheme.spacingLg),
+                        decoration: BoxDecoration(
+                          color: AppTheme.surfaceContainerLowest,
+                          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                          border: Border.all(color: AppTheme.surfaceContainerHigh),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.03),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.description,
+                                  color: AppTheme.onSurfaceVariant,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: AppTheme.spacingSm),
+                                Text(
+                                  'Deskripsi Kendala',
+                                  style: AppTheme.titleMedium.copyWith(
+                                    color: AppTheme.onSurface,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: AppTheme.spacingSm),
+                            Text(
+                              ticket['description'] ?? 'Tidak ada deskripsi',
+                              style: AppTheme.bodyLarge.copyWith(
+                                color: AppTheme.onSurfaceVariant,
+                                height: 1.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Attachments Section
+                      if (ticket['image_url'] != null &&
+                          ticket['image_url'].toString().isNotEmpty)
+                        Container(
+                          margin: const EdgeInsets.only(bottom: AppTheme.spacingLg),
+                          padding: const EdgeInsets.all(AppTheme.spacingLg),
+                          decoration: BoxDecoration(
+                            color: AppTheme.surfaceContainerLowest,
+                            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                            border: Border.all(color: AppTheme.surfaceContainerHigh),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.03),
+                                blurRadius: 4,
+                              ),
                             ],
-                          )
-                        ] else ...[
-                          const SizedBox(height: 8),
-                          const Text('Ditangani Oleh: Tim Support IT', style: TextStyle(color: Colors.grey)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.attachment,
+                                    color: AppTheme.onSurfaceVariant,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: AppTheme.spacingSm),
+                                  Text(
+                                    'Lampiran',
+                                    style: AppTheme.titleMedium.copyWith(
+                                      color: AppTheme.onSurface,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: AppTheme.spacingSm),
+                              SizedBox(
+                                height: 120,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: 1,
+                                  itemBuilder: (context, index) {
+                                    return Container(
+                                      width: 100,
+                                      margin: const EdgeInsets.only(right: AppTheme.spacingSm),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                                        border: Border.all(color: AppTheme.outlineVariant),
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                                        child: Image.network(
+                                          ticket['image_url'],
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (context, error, stackTrace) {
+                                            return Container(
+                                              color: AppTheme.surfaceContainerLow,
+                                              child: const Center(
+                                                child: Icon(Icons.broken_image),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                      // Activity & Comments Section
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Aktivitas & Komentar',
+                            style: AppTheme.titleMedium.copyWith(
+                              color: AppTheme.onSurface,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: AppTheme.spacingSm),
+                          _TicketTimelineWidget(ticketId: ticketId),
                         ],
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 24),
-                const Text(
-                  'Riwayat Pembaruan Status (FR-010)',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+
+              // Bottom Sticky Input
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppTheme.spacingMd,
+                  vertical: MediaQuery.of(context).padding.bottom,
                 ),
-                const SizedBox(height: 8),
-                _TicketHistoryWidget(ticketId: ticketId),
-                
-                const SizedBox(height: 24),
-                const Text('Balasan / Komentar (FR-005.5):', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                const SizedBox(height: 8),
-                _CommentInputWidget(ticketId: ticketId, currentStatus: ticket['status']),
-              ],
-            ),
+                decoration: BoxDecoration(
+                  color: AppTheme.surface,
+                  border: Border(
+                    top: BorderSide(color: AppTheme.outlineVariant),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 4,
+                      offset: const Offset(0, -1),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.add_circle),
+                      color: AppTheme.onSurfaceVariant,
+                      onPressed: () {},
+                    ),
+                    Expanded(
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Tambah komentar...',
+                          filled: true,
+                          fillColor: AppTheme.surfaceContainerLowest,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                            borderSide: const BorderSide(color: AppTheme.outline),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: AppTheme.spacingMd,
+                            vertical: 12,
+                          ),
+                        ),
+                        maxLines: 1,
+                      ),
+                    ),
+                    const SizedBox(width: AppTheme.spacingSm),
+                    IconButton(
+                      icon: const Icon(Icons.send),
+                      color: AppTheme.primary,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        foregroundColor: AppTheme.onPrimary,
+                        padding: const EdgeInsets.all(AppTheme.spacingSm),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                        ),
+                      ),
+                      onPressed: () {},
+                    ),
+                  ],
+                ),
+              ),
+            ],
           );
         },
       ),
     );
   }
-}
 
-class _CommentInputWidget extends ConsumerStatefulWidget {
-  final String ticketId;
-  final String currentStatus;
-
-  const _CommentInputWidget({required this.ticketId, required this.currentStatus});
-
-  @override
-  ConsumerState<_CommentInputWidget> createState() => _CommentInputWidgetState();
-}
-
-class _CommentInputWidgetState extends ConsumerState<_CommentInputWidget> {
-  final _commentController = TextEditingController();
-  bool _isSending = false;
-
-  @override
-  void dispose() {
-    _commentController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _sendComment() async {
-    final text = _commentController.text.trim();
-    if (text.isEmpty) return;
-
-    setState(() => _isSending = true);
-    try {
-      final supabase = ref.read(supabaseClientProvider);
-      
-      // Simpan input asli ke history / catatan reply
-      // PASTIKAN Anda MENGGANTI ATAU MENAMBAHKAN kolom notes pada tabel history ticket menjadi note atau sesuai db.
-      // Berdasarkan pesan error (notes missing), mari ganti dgn insert 'note' -> di dashboard, pastikan namanya juga sejalur!
-      await supabase.from('ticket_history').insert({
-        'ticket_id': widget.ticketId,
-        'user_id': supabase.auth.currentUser!.id,
-        'action': 'Komentar',
-        'message': text,
-      });
-
-      // Invalidate history sehingga ui langsung nampil pesan baru ini
-      ref.invalidate(ticketHistoryProvider(widget.ticketId));
-
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Komentar berhasil dikirim!')));
-    } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal mengirim: $e')));
-    } finally {
-      if (mounted) setState(() => _isSending = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: _commentController,
-      decoration: InputDecoration(
-        hintText: 'Tulis pesan/balasan di sini...',
-        filled: true,
-        fillColor: Colors.grey.withValues(alpha: 0.1),
-        border: const OutlineInputBorder(),
-        suffixIcon: _isSending
-            ? const Padding(
-                padding: EdgeInsets.all(12.0),
-                child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
-              )
-            : IconButton(
-                icon: const Icon(Icons.send, color: Colors.blue),
-                onPressed: _sendComment,
-              ),
-      ),
-    );
-  }
-}
-
-class _StatusDropdownWidget extends ConsumerStatefulWidget {
-  final String ticketId;
-  final String currentStatus;
-
-  const _StatusDropdownWidget({
-    required this.ticketId,
-    required this.currentStatus,
-  });
-
-  @override
-  ConsumerState<_StatusDropdownWidget> createState() => _StatusDropdownWidgetState();
-}
-
-class _StatusDropdownWidgetState extends ConsumerState<_StatusDropdownWidget> {
-  late String _statusLocal;
-  bool _isUpdating = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _statusLocal = widget.currentStatus;
-  }
-
-  @override
-  void didUpdateWidget(covariant _StatusDropdownWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (!_isUpdating && oldWidget.currentStatus != widget.currentStatus) {
-      _statusLocal = widget.currentStatus;
-    }
-  }
-
-  Future<void> _updateStatus(String newStatus) async {
-    if (newStatus == _statusLocal || _isUpdating) return;
-
-    setState(() {
-      _statusLocal = newStatus;
-      _isUpdating = true;
-    });
-
-    try {
-      final supabase = ref.read(supabaseClientProvider);
-      
-      await supabase.from('tickets').update({'status': newStatus}).eq('id', widget.ticketId);
-      
-      await supabase.from('ticket_history').insert({
-        'ticket_id': widget.ticketId,
-        'user_id': supabase.auth.currentUser!.id,
-        'action': 'Update Status',
-        'message': 'Status diubah ke $newStatus',
-      });
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Status Tiket Berhasil Diupdate! (FR-006.3)')),
-        );
-      }
-
-      ref.invalidate(ticketDetailProvider(widget.ticketId));
-      ref.invalidate(ticketHistoryProvider(widget.ticketId));
-      ref.invalidate(ticketsProvider); 
-      ref.invalidate(ticketStatsProvider); 
-      
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _statusLocal = widget.currentStatus;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal mengubah status: $e')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isUpdating = false);
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_isUpdating) {
-      return const SizedBox(
-        width: 24,
-        height: 24,
-        child: CircularProgressIndicator(strokeWidth: 2),
-      );
-    }
-    
-    return DropdownButton<String>(
-      value: _statusLocal,
-      items: const [
-        DropdownMenuItem(value: 'pending', child: Text('Pending')),
-        DropdownMenuItem(value: 'on_progress', child: Text('Diproses')),
-        DropdownMenuItem(value: 'resolved', child: Text('Selesai')),
+  Widget _buildMetaInfo(IconData icon, String text) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 18, color: AppTheme.onSurfaceVariant),
+        const SizedBox(width: 4),
+        Text(
+          text,
+          style: AppTheme.bodyMedium.copyWith(color: AppTheme.onSurfaceVariant),
+        ),
       ],
-      onChanged: (newStatus) {
-        if (newStatus != null) {
-          _updateStatus(newStatus);
-        }
-      },
     );
+  }
+
+  Widget _buildInfoCard(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: AppTheme.labelMedium.copyWith(color: AppTheme.onSurfaceVariant),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: AppTheme.bodyMedium.copyWith(color: AppTheme.onSurface),
+        ),
+      ],
+    );
+  }
+
+  IconData _getStatusIcon(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return Icons.pending;
+      case 'on_progress':
+        return Icons.sync;
+      case 'resolved':
+        return Icons.check_circle;
+      default:
+        return Icons.help_outline;
+    }
+  }
+
+  String _formatStatus(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return 'Pending';
+      case 'on_progress':
+        return 'Diproses';
+      case 'resolved':
+        return 'Selesai';
+      default:
+        return status;
+    }
+  }
+
+  String _formatPriority(String priority) {
+    switch (priority.toLowerCase()) {
+      case 'normal':
+        return 'Normal';
+      case 'medium':
+        return 'Medium';
+      case 'high':
+        return 'Tinggi';
+      case 'urgent':
+        return 'Urgent';
+      default:
+        return priority;
+    }
+  }
+
+  String _formatDateTime(dynamic date) {
+    if (date == null) return '-';
+    try {
+      final dateTime = date is String ? DateTime.parse(date) : date as DateTime;
+      return '${dateTime.day} ${_getMonth(dateTime.month)} ${dateTime.year}, ${_formatTime(dateTime.hour)}:${_formatTime(dateTime.minute)}';
+    } catch (e) {
+      return '-';
+    }
+  }
+
+  String _formatDate(dynamic date) {
+    if (date == null) return '-';
+    try {
+      final dateTime = date is String ? DateTime.parse(date) : date as DateTime;
+      return '${dateTime.day} ${_getMonth(dateTime.month)} ${dateTime.year}';
+    } catch (e) {
+      return '-';
+    }
+  }
+
+  String _getMonth(int month) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+    ];
+    return months[month - 1];
+  }
+
+  String _formatTime(int hour) {
+    return hour.toString().padLeft(2, '0');
   }
 }
 
-// Komponen history yang dinamis memanfaatkan Riverpod Provider
-class _TicketHistoryWidget extends ConsumerWidget {
+class _TicketTimelineWidget extends ConsumerWidget {
   final String ticketId;
 
-  const _TicketHistoryWidget({required this.ticketId});
+  const _TicketTimelineWidget({required this.ticketId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final historyAsync = ref.watch(ticketHistoryProvider(ticketId));
 
     return historyAsync.when(
-      loading: () => const CircularProgressIndicator(),
-      error: (e, _) => Text('Gagal muat history: $e'),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(
+        child: Text('Gagal memuat history: $e',
+          style: AppTheme.bodyMedium.copyWith(color: AppTheme.error),
+        ),
+      ),
       data: (records) {
         if (records.isEmpty) {
-          return const Text('Belum ada riwayat aktivitas pada tiket ini.', style: TextStyle(color: Colors.grey));
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(AppTheme.spacingLg),
+              child: Text(
+                'Belum ada aktivitas',
+                style: AppTheme.bodyMedium.copyWith(color: AppTheme.onSurfaceVariant),
+              ),
+            ),
+          );
         }
 
-        return ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: records.length,
-          itemBuilder: (context, index) {
-            final log = records[index];
-            return ListTile(
-              leading: Icon(
-                log['status'] == 'resolved' ? Icons.check_circle : Icons.update,
-                color: log['status'] == 'resolved' ? Colors.green : Colors.blue,
+        return Padding(
+          padding: const EdgeInsets.only(left: AppTheme.spacingLg, bottom: AppTheme.spacingLg),
+          child: Column(
+            children: [
+              // Timeline
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: records.map<Widget>((log) {
+                  final isSystemUpdate = log['action'] == 'Update Status' || log['action'] == 'Assigned';
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: AppTheme.spacingLg),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Timeline Item
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Timeline Dot
+                            Container(
+                              margin: const EdgeInsets.only(left: 2),
+                              width: isSystemUpdate ? 20 : 24,
+                              height: isSystemUpdate ? 20 : 24,
+                              decoration: BoxDecoration(
+                                color: isSystemUpdate
+                                    ? AppTheme.secondaryContainer
+                                    : (log['action'] == 'Komentar' ? AppTheme.surfaceVariant : AppTheme.primary),
+                                border: Border.all(
+                                  color: AppTheme.background,
+                                  width: 4,
+                                ),
+                                borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  _getTimelineIcon(log['action']),
+                                  size: isSystemUpdate ? 12 : 14,
+                                  color: isSystemUpdate
+                                      ? AppTheme.onSecondaryContainer
+                                      : (log['action'] == 'Komentar' ? AppTheme.onSurface : AppTheme.onPrimary),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: AppTheme.spacingMd),
+                            // Content
+                            Expanded(
+                              child: isSystemUpdate
+                                  ? _buildSystemUpdateItem(log)
+                                  : _buildCommentItem(log),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
               ),
-              title: Text('${log['action']} · Status: ${log['status'] ?? '-'}'),
-              subtitle: Text(log['message'] ?? 'Tanpa Catatan'),
-              trailing: Text(
-                log['created_at'].toString().substring(0, 16).replaceAll('T', '\n'),
-                style: const TextStyle(fontSize: 10, color: Colors.grey),
-                textAlign: TextAlign.end,
-              ),
-            );
-          },
+            ],
+          ),
         );
       },
     );
   }
+
+  Widget _buildCommentItem(Map<String, dynamic> log) {
+    return Container(
+      padding: const EdgeInsets.all(AppTheme.spacingMd),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+        border: Border.all(color: AppTheme.surfaceContainerHigh),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 4,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                log['user_id']?.toString().substring(0, 8) ?? 'User',
+                style: AppTheme.labelLarge.copyWith(
+                  color: AppTheme.onSurface,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                _formatDateTime(log['created_at']),
+                style: AppTheme.labelMedium.copyWith(
+                  color: AppTheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppTheme.spacingSm),
+          Text(
+            log['message'] ?? '',
+            style: AppTheme.bodyMedium.copyWith(color: AppTheme.onSurfaceVariant),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSystemUpdateItem(Map<String, dynamic> log) {
+    final action = log['action'] ?? '';
+    final message = log['message'] ?? '';
+
+    // Parse status change from message
+    String? fromStatus, toStatus;
+    if (action == 'Update Status' && message.contains('dari') && message.contains('menjadi')) {
+      final parts = message.split('dari ');
+      if (parts.length > 1) {
+        final toParts = parts[1].split(' menjadi ');
+        fromStatus = toParts[0];
+        toStatus = toParts.length > 1 ? toParts[1].split('.')[0] : toParts[1];
+      }
+    }
+
+    return Row(
+      children: [
+        Text(
+          'Sistem',
+          style: AppTheme.bodyMedium.copyWith(
+            color: AppTheme.onSurface,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Text(
+          ' mengubah status dari ',
+          style: AppTheme.bodyMedium.copyWith(color: AppTheme.onSurfaceVariant),
+        ),
+        if (fromStatus != null)
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.spacingSm,
+              vertical: 2,
+            ),
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+            ),
+            child: Text(
+              _formatStatus(fromStatus),
+              style: AppTheme.bodySmall.copyWith(color: AppTheme.onSurface),
+            ),
+          ),
+        Text(' menjadi '),
+        if (toStatus != null)
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.spacingSm,
+              vertical: 2,
+            ),
+            decoration: BoxDecoration(
+              color: AppTheme.secondaryContainer,
+              borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+            ),
+            child: Text(
+              _formatStatus(toStatus),
+              style: AppTheme.bodySmall.copyWith(color: AppTheme.onSecondaryContainer),
+            ),
+          ),
+        Text(' '),
+        Text(
+          _formatDateTime(log['created_at']),
+          style: AppTheme.labelSmall.copyWith(
+            color: AppTheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
+  }
+
+  IconData _getTimelineIcon(String? action) {
+    switch (action?.toLowerCase()) {
+      case 'update status':
+      case 'assigned':
+        return Icons.sync;
+      case 'komentar':
+        return Icons.person;
+      default:
+        return Icons.check_circle;
+    }
+  }
+
+  String _formatDateTime(dynamic date) {
+    if (date == null) return '-';
+    try {
+      final dateTime = date is String ? DateTime.parse(date) : date as DateTime;
+      return '${dateTime.day} ${_getMonth(dateTime.month)} ${dateTime.year}, ${_formatTime(dateTime.hour)}:${_formatTime(dateTime.minute)}';
+    } catch (e) {
+      return '-';
+    }
+  }
+
+  String _formatStatus(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return 'Pending';
+      case 'on_progress':
+        return 'Diproses';
+      case 'resolved':
+        return 'Selesai';
+      default:
+        return status;
+    }
+  }
+
+  String _getMonth(int month) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+    ];
+    return months[month - 1];
+  }
+
+  String _formatTime(int hour) {
+    return hour.toString().padLeft(2, '0');
+  }
 }
-
-

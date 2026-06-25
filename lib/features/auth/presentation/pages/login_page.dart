@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
 
@@ -32,27 +33,28 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               password: _passwordController.text,
             );
 
-        // Jangan lupa invalidate profile provider agar tidak nyangkut cache user sebelumnya
+        // Invalidate profile provider agar tidak nyangkut cache user sebelumnya
         ref.invalidate(userProfileProvider);
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Login Berhasil'),
-              backgroundColor: Colors.green.shade600,
+              backgroundColor: AppTheme.tertiaryContainer,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+              ),
             ),
           );
 
-          // ✨ LOGIC ROUTING OPTION 1 ✨
           // Diarahkan sesuai dengan ROLE
           if (role == 'admin') {
-            context.go('/admin');     // Masuk Dashboard Admin
+            context.go('/admin');
           } else if (role == 'helpdesk') {
-            context.go('/helpdesk');  // Masuk Dashboard Helpdesk
+            context.go('/helpdesk');
           } else {
-            context.go('/home');      // Masuk Dashboard User/Mahasiswa
+            context.go('/home');
           }
         }
       } catch (e) {
@@ -60,9 +62,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Login gagal: $e'),
-              backgroundColor: Colors.redAccent,
+              backgroundColor: AppTheme.error,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+              ),
             ),
           );
         }
@@ -75,77 +79,79 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final isLoading = ref.watch(authProvider).isLoading;
 
     return Scaffold(
+      backgroundColor: AppTheme.background,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.blue.shade50,
-              Colors.white,
-              Colors.blue.shade100,
+              AppTheme.primary.withValues(alpha: 0.05),
+              AppTheme.surface,
+              AppTheme.primaryContainer.withValues(alpha: 0.08),
             ],
           ),
         ),
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.spacingLg,
+                vertical: AppTheme.spacingLg,
+              ),
               child: Form(
                 key: _formKey,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // LOGO Ikon Modern
+                    // Logo Icon
                     Container(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(AppTheme.spacingLg),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white,
+                        color: AppTheme.surface,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.blue.withValues(alpha: 0.2),
+                            color: AppTheme.primary.withValues(alpha: 0.2),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),
                         ],
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.support_agent_rounded,
-                        size: 80,
-                        color: Colors.blueAccent,
+                        size: 64,
+                        color: AppTheme.primary,
                       ),
                     ),
-                    const SizedBox(height: 32),
-                    const Text(
-                      'Selamat Datang Kembali!',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.black87,
-                        letterSpacing: -0.5,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Masuk untuk mengelola tiket Anda',
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.black54,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 48),
+                    const SizedBox(height: AppTheme.spacingLg),
 
-                    // FORM CARD (Kartu Keren ala App Modern)
+                    Text(
+                      'Selamat Datang Kembali!',
+                      style: AppTheme.headlineMedium.copyWith(
+                        color: AppTheme.onSurface,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppTheme.spacingSm),
+                    Text(
+                      'Masuk untuk mengelola tiket Anda',
+                      style: AppTheme.bodyMedium.copyWith(
+                        color: AppTheme.onSurfaceVariant,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppTheme.spacingXl),
+
+                    // Form Card
                     Container(
-                      padding: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(AppTheme.spacingLg),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
+                        color: AppTheme.surface,
+                        borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+                        border: Border.all(color: AppTheme.outlineVariant),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.05),
@@ -163,43 +169,50 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             validator: (value) =>
                                 value!.isEmpty ? 'Username wajib diisi' : null,
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: AppTheme.spacingMd),
                           _buildTextField(
                             controller: _passwordController,
                             label: 'Password',
                             icon: Icons.lock_outline_rounded,
                             isPassword: true,
                             validator: (value) {
-                              if (value == null || value.isEmpty) return 'Password wajib diisi';
+                              if (value == null || value.isEmpty) {
+                                return 'Password wajib diisi';
+                              }
                               if (value.length < 6) return 'Minimal 6 karakter';
                               return null;
                             },
                           ),
-                          
+
                           Align(
                             alignment: Alignment.centerRight,
                             child: TextButton(
                               onPressed: () => context.push('/forgot-password'),
                               style: TextButton.styleFrom(
-                                foregroundColor: Colors.blueAccent,
+                                foregroundColor: AppTheme.primary,
                               ),
-                              child: const Text('Lupa Password?', style: TextStyle(fontWeight: FontWeight.w600)),
+                              child: Text(
+                                'Lupa Password?',
+                                style: AppTheme.labelLarge.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 24),
-                          
-                          // LOGIN BUTTON Modern
+                          const SizedBox(height: AppTheme.spacingMd),
+
+                          // Login Button
                           SizedBox(
                             width: double.infinity,
                             height: 54,
                             child: ElevatedButton(
                               onPressed: isLoading ? null : _handleLogin,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blueAccent,
-                                foregroundColor: Colors.white,
-                                elevation: 0,
+                                backgroundColor: AppTheme.primaryContainer,
+                                foregroundColor: AppTheme.onPrimary,
+                                elevation: AppTheme.elevationLevel1,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                                 ),
                               ),
                               child: isLoading
@@ -207,14 +220,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                       height: 24,
                                       width: 24,
                                       child: CircularProgressIndicator(
-                                        color: Colors.white,
+                                        color: AppTheme.onPrimary,
                                         strokeWidth: 2.5,
                                       ),
                                     )
-                                  : const Text(
+                                  : Text(
                                       'MASUK',
-                                      style: TextStyle(
-                                        fontSize: 16,
+                                      style: AppTheme.labelLarge.copyWith(
                                         fontWeight: FontWeight.bold,
                                         letterSpacing: 1.2,
                                       ),
@@ -224,25 +236,26 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: AppTheme.spacingLg),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
+                        Text(
                           'Belum punya akun?',
-                          style: TextStyle(
-                            color: Colors.black54,
-                            fontWeight: FontWeight.w500,
+                          style: AppTheme.bodyMedium.copyWith(
+                            color: AppTheme.onSurfaceVariant,
                           ),
                         ),
                         TextButton(
                           onPressed: () => context.push('/register'),
                           style: TextButton.styleFrom(
-                            foregroundColor: Colors.blue.shade700,
+                            foregroundColor: AppTheme.primary,
                           ),
-                          child: const Text(
+                          child: Text(
                             'Daftar di sini',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: AppTheme.labelLarge.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
@@ -257,7 +270,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     );
   }
 
-  // Widget Custom Text Field (Lebih Elegan)
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -269,16 +281,24 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       controller: controller,
       obscureText: isPassword && !_isPasswordVisible,
       validator: validator,
-      style: const TextStyle(fontWeight: FontWeight.w500),
+      style: AppTheme.bodyLarge.copyWith(
+        color: AppTheme.onSurface,
+        fontWeight: FontWeight.w500,
+      ),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.grey.shade600),
-        prefixIcon: Icon(icon, color: Colors.blueAccent.withValues(alpha: 0.7)),
+        labelStyle: AppTheme.bodyMedium.copyWith(
+          color: AppTheme.onSurfaceVariant,
+        ),
+        prefixIcon: Icon(
+          icon,
+          color: AppTheme.primary.withValues(alpha: 0.7),
+        ),
         suffixIcon: isPassword
             ? IconButton(
                 icon: Icon(
                   _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                  color: Colors.grey,
+                  color: AppTheme.onSurfaceVariant,
                 ),
                 onPressed: () {
                   setState(() {
@@ -288,26 +308,40 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               )
             : null,
         filled: true,
-        fillColor: Colors.grey.shade50,
+        fillColor: AppTheme.surfaceContainerLowest,
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
+          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+          borderSide: const BorderSide(
+            color: AppTheme.outline,
+            width: 1.5,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
+          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+          borderSide: const BorderSide(
+            color: AppTheme.primary,
+            width: 2,
+          ),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.red.shade300, width: 1.5),
+          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+          borderSide: const BorderSide(
+            color: AppTheme.error,
+            width: 1.5,
+          ),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.redAccent, width: 2),
+          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+          borderSide: const BorderSide(
+            color: AppTheme.error,
+            width: 2,
+          ),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppTheme.spacingLg,
+          vertical: 18,
+        ),
       ),
     );
   }
 }
-

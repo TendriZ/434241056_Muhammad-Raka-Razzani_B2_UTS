@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/services/supabase_service.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../providers/ticket_provider.dart';
 
 class CreateTicketPage extends ConsumerStatefulWidget {
@@ -18,9 +18,28 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
   bool _isLoading = false;
+  String? _selectedCategory = 'technical';
+  String _selectedPriority = 'normal';
 
   final List<({String name, List<int> bytes})> _attachments = [];
   final ImagePicker _imagePicker = ImagePicker();
+
+  // Categories from Stitch design
+  final List<Map<String, dynamic>> _categories = [
+    {'value': 'technical', 'label': 'Technical'},
+    {'value': 'hardware', 'label': 'Hardware'},
+    {'value': 'software', 'label': 'Software'},
+    {'value': 'network', 'label': 'Network'},
+    {'value': 'other', 'label': 'Other'},
+  ];
+
+  // Priorities from Stitch design
+  final List<Map<String, dynamic>> _priorities = [
+    {'value': 'normal', 'label': 'Normal'},
+    {'value': 'medium', 'label': 'Medium'},
+    {'value': 'high', 'label': 'High'},
+    {'value': 'urgent', 'label': 'Urgent'},
+  ];
 
   @override
   void dispose() {
@@ -29,7 +48,6 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
     super.dispose();
   }
 
-  // ─── Buka Kamera (FR-005.2) ───────────────────────────────────────────────
   Future<void> _openCamera() async {
     try {
       final XFile? photo = await _imagePicker.pickImage(
@@ -59,7 +77,7 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Foto berhasil diambil!'),
-              backgroundColor: Colors.green,
+              backgroundColor: AppTheme.tertiaryContainer,
             ),
           );
         }
@@ -73,7 +91,6 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
     }
   }
 
-  // ─── Buka File Manager / Galeri (FR-005.2) ───────────────────────────────
   Future<void> _pickFiles() async {
     try {
       final result = await FilePicker.platform.pickFiles(
@@ -110,7 +127,7 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('$addedCount file berhasil dipilih'),
-              backgroundColor: Colors.green,
+              backgroundColor: AppTheme.tertiaryContainer,
             ),
           );
         }
@@ -128,7 +145,6 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
     setState(() => _attachments.removeAt(index));
   }
 
-  // ─── Submit Tiket ─────────────────────────────────────────────────────────
   Future<void> _submitTicket() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -142,25 +158,24 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
         'title': _titleController.text.trim(),
         'description': _descController.text.trim(),
         'status': 'pending',
+        'category': _selectedCategory,
+        'priority': _selectedPriority,
       }).select().single();
 
       final ticketId = ticketResponse['id'].toString();
 
-      // Mulai upload file pertama (jika ada) dan update ke tabel `tickets` kolom `image_url`
       if (_attachments.isNotEmpty) {
         try {
-          final attachment = _attachments.first; // Ambil file pertama saja sebagai representasi utama
+          final attachment = _attachments.first;
           final timestamp = DateTime.now().millisecondsSinceEpoch;
           final filePath = 'tickets/$ticketId/$timestamp-${attachment.name}';
 
           await supabase.storage
               .from('ticket-attachments')
               .uploadBinary(filePath, attachment.bytes as dynamic);
-              
-          // Dapatkan public URL
+
           final imageUrl = supabase.storage.from('ticket-attachments').getPublicUrl(filePath);
 
-          // Update data tiket yang baru saja dibuat dengan URL gambar
           await supabase.from('tickets').update({
             'image_url': imageUrl,
           }).eq('id', ticketId);
@@ -178,7 +193,7 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Tiket berhasil dibuat!'),
-          backgroundColor: Colors.green,
+          backgroundColor: AppTheme.tertiaryContainer,
         ),
       );
     } catch (e) {
@@ -194,201 +209,475 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Buat Tiket Baru')),
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        backgroundColor: AppTheme.surface,
+        elevation: AppTheme.elevationLevel1,
+        leading: IconButton(
+          icon: const Icon(Icons.menu, color: AppTheme.onSurfaceVariant),
+          onPressed: () {},
+        ),
+        title: Text(
+          'IT Support',
+          style: AppTheme.titleLarge.copyWith(color: AppTheme.primary),
+        ),
+        actions: [
+          Container(
+            width: 32,
+            height: 32,
+            margin: const EdgeInsets.only(right: AppTheme.spacingMd),
+            decoration: const BoxDecoration(
+              color: AppTheme.surfaceVariant,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.person, size: 16, color: AppTheme.onSurfaceVariant),
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppTheme.spacingMd,
+          vertical: AppTheme.spacingLg,
+        ),
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Field Judul
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Judul Masalah',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.title),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Judul tidak boleh kosong';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Field Deskripsi
-              TextFormField(
-                controller: _descController,
-                maxLines: 5,
-                decoration: const InputDecoration(
-                  labelText: 'Deskripsi Detail',
-                  border: OutlineInputBorder(),
-                  alignLabelWithHint: true,
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Sertakan deskripsi masalah';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 24),
-
-              const Text(
-                'Unggah Laporan / Bukti (FR-005.2)',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              const SizedBox(height: 12),
-
-              // Preview file terpilih
-              if (_attachments.isNotEmpty) ...[
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade300),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _attachments.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final file = _attachments[index];
-                      final ext = file.name.split('.').last.toUpperCase();
-                      return ListTile(
-                        leading: Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: Colors.blue.shade50,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Center(
-                            child: Text(ext,
-                                style: const TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.blue)),
-                          ),
-                        ),
-                        title: Text(file.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 13)),
-                        subtitle: Text(
-                          '${(file.bytes.length / 1024).toStringAsFixed(1)} KB',
-                          style: const TextStyle(fontSize: 11),
-                        ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.close, color: Colors.red, size: 18),
-                          onPressed: () => _removeAttachment(index),
-                          tooltip: 'Hapus file',
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 12),
-              ],
-
-              // Area kosong
-              if (_attachments.isEmpty)
-                Container(
-                  height: 100,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade400),
-                    color: Colors.grey.withValues(alpha: 0.05),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.cloud_upload_outlined,
-                          size: 36, color: Colors.blue.shade400),
-                      const SizedBox(height: 6),
-                      const Text('Belum ada file terpilih',
-                          style: TextStyle(color: Colors.grey, fontSize: 13)),
-                    ],
-                  ),
-                ),
-              const SizedBox(height: 12),
-
-              // Tombol Kamera & Galeri
-              Row(
-                children: [
-                  // Tombol Kamera
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _openCamera,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue.shade50,
-                        foregroundColor: Colors.blue.shade700,
-                        elevation: 0,
-                      ),
-                      icon: const Icon(Icons.camera_alt),
-                      label: const Text('Buka Kamera'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-
-                  // Tombol Pilih File/Galeri — muncul di semua platform
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _pickFiles,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue.shade50,
-                        foregroundColor: Colors.blue.shade700,
-                        elevation: 0,
-                      ),
-                      icon: const Icon(Icons.photo_library),
-                      label: Text(kIsWeb ? 'Pilih File' : 'Pilih Galeri'),
-                    ),
-                  ),
-                ],
-              ),
-
-              if (_attachments.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                TextButton.icon(
-                  onPressed: () => setState(() => _attachments.clear()),
-                  icon: const Icon(Icons.delete_outline, color: Colors.red, size: 16),
-                  label: const Text('Hapus Semua File',
-                      style: TextStyle(color: Colors.red, fontSize: 12)),
-                ),
-              ],
-
-              const SizedBox(height: 8),
+              // Header Section
               Text(
-                kIsWeb
-                    ? 'Format: JPG, PNG, GIF, PDF, DOC (Maks. 10MB per file)'
-                    : 'Kamera atau pilih dari galeri (Maks. 10MB per file)',
-                style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-                textAlign: TextAlign.center,
+                'Buat Tiket Baru',
+                style: AppTheme.headlineSmall.copyWith(color: AppTheme.onSurface),
               ),
+              const SizedBox(height: AppTheme.spacingSm),
+              Text(
+                'Silakan isi detail masalah yang Anda alami.',
+                style: AppTheme.bodyMedium.copyWith(color: AppTheme.onSurfaceVariant),
+              ),
+              const SizedBox(height: AppTheme.spacingLg),
 
-              const SizedBox(height: 32),
-
-              // Tombol Submit
-              ElevatedButton(
-                onPressed: _isLoading ? null : _submitTicket,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(16.0),
+              // Form Card
+              Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.surface,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                  border: Border.all(color: AppTheme.surfaceVariant),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 4,
+                    ),
+                  ],
                 ),
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('KIRIM TIKET', style: TextStyle(fontSize: 16)),
+                padding: const EdgeInsets.all(AppTheme.spacingLg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title Input
+                    Text(
+                      'Judul Tiket',
+                      style: AppTheme.labelLarge.copyWith(color: AppTheme.onSurface),
+                    ),
+                    const SizedBox(height: AppTheme.spacingSm),
+                    TextFormField(
+                      controller: _titleController,
+                      decoration: InputDecoration(
+                        hintText: 'Misal: Komputer tidak bisa menyala',
+                        filled: true,
+                        fillColor: AppTheme.surfaceContainerLowest,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                          borderSide: const BorderSide(color: AppTheme.outline),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                          borderSide: const BorderSide(color: AppTheme.outline),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                          borderSide: const BorderSide(color: AppTheme.primary, width: 2),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: AppTheme.spacingMd,
+                          vertical: 12,
+                        ),
+                      ),
+                      style: AppTheme.bodyLarge.copyWith(color: AppTheme.onSurface),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Judul tidak boleh kosong';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: AppTheme.spacingLg),
+
+                    // Description Input
+                    Text(
+                      'Deskripsi Masalah',
+                      style: AppTheme.labelLarge.copyWith(color: AppTheme.onSurface),
+                    ),
+                    const SizedBox(height: AppTheme.spacingSm),
+                    TextFormField(
+                      controller: _descController,
+                      maxLines: 6,
+                      decoration: InputDecoration(
+                        hintText: 'Jelaskan secara detail masalah yang terjadi...',
+                        filled: true,
+                        fillColor: AppTheme.surfaceContainerLowest,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                          borderSide: const BorderSide(color: AppTheme.outline),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                          borderSide: const BorderSide(color: AppTheme.outline),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                          borderSide: const BorderSide(color: AppTheme.primary, width: 2),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: AppTheme.spacingMd,
+                          vertical: 12,
+                        ),
+                      ),
+                      style: AppTheme.bodyLarge.copyWith(color: AppTheme.onSurface),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Sertakan deskripsi masalah';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: AppTheme.spacingLg),
+
+                    // Category Dropdown
+                    Text(
+                      'Kategori',
+                      style: AppTheme.labelLarge.copyWith(color: AppTheme.onSurface),
+                    ),
+                    const SizedBox(height: AppTheme.spacingSm),
+                    DropdownButtonFormField<String>(
+                      value: _selectedCategory,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: AppTheme.surfaceContainerLowest,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                          borderSide: const BorderSide(color: AppTheme.outline),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                          borderSide: const BorderSide(color: AppTheme.outline),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                          borderSide: const BorderSide(color: AppTheme.primary, width: 2),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: AppTheme.spacingMd,
+                          vertical: 12,
+                        ),
+                      ),
+                      items: _categories.map<DropdownMenuItem<String>>((category) {
+                        return DropdownMenuItem<String>(
+                          value: category['value'] as String,
+                          child: Text(category['label']),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() => _selectedCategory = value);
+                      },
+                    ),
+                    const SizedBox(height: AppTheme.spacingLg),
+
+                    // Priority Chips
+                    Text(
+                      'Prioritas',
+                      style: AppTheme.labelLarge.copyWith(color: AppTheme.onSurface),
+                    ),
+                    const SizedBox(height: AppTheme.spacingMd),
+                    Wrap(
+                      spacing: AppTheme.spacingSm,
+                      children: _priorities.map((priority) {
+                        final isSelected = _selectedPriority == priority['value'];
+                        return GestureDetector(
+                          onTap: () => setState(() => _selectedPriority = priority['value']),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppTheme.spacingMd,
+                              vertical: AppTheme.spacingSm,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppTheme.getPriorityBadgeColor(priority['value'])
+                                  : AppTheme.surface,
+                              border: Border.all(
+                                color: isSelected
+                                    ? AppTheme.getPriorityBorderColor(priority['value'])
+                                    : AppTheme.outline,
+                              ),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (priority['value'] == 'urgent')
+                                  const Icon(Icons.error, size: 14, color: AppTheme.onError)
+                                else if (priority['value'] == 'high')
+                                  const Icon(Icons.warning, size: 14, color: AppTheme.priorityOnHigh)
+                                else if (priority['value'] == 'medium')
+                                  const Icon(Icons.info, size: 14, color: AppTheme.priorityOnMedium)
+                                else
+                                  Icon(Icons.info_outline, size: 14, color: AppTheme.priorityOnNormal),
+                                const SizedBox(width: 4),
+                                Text(
+                                  priority['label'],
+                                  style: AppTheme.labelMedium.copyWith(
+                                    color: isSelected
+                                        ? AppTheme.getPriorityTextColor(priority['value'])
+                                        : AppTheme.onSurface,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppTheme.spacingLg),
+
+              // File Upload Section
+              Text(
+                'Lampiran (Opsional)',
+                style: AppTheme.labelLarge.copyWith(color: AppTheme.onSurface),
+              ),
+              const SizedBox(height: AppTheme.spacingSm),
+
+              // Upload Area or File List
+              _attachments.isEmpty
+                  ? GestureDetector(
+                      onTap: _pickFiles,
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppTheme.spacingMd,
+                          vertical: AppTheme.spacingLg,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppTheme.surfaceContainerLowest,
+                          border: Border.all(
+                            color: AppTheme.outlineVariant,
+                            width: 2,
+                            style: BorderStyle.solid,
+                          ),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.cloud_upload_outlined,
+                              size: 48,
+                              color: AppTheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(height: AppTheme.spacingSm),
+                            Text(
+                              'Klik untuk unggah file atau seret ke sini',
+                              style: AppTheme.bodyMedium.copyWith(
+                                color: AppTheme.onSurfaceVariant,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Maksimal 10MB (JPG, PNG, PDF)',
+                              style: AppTheme.labelMedium.copyWith(
+                                color: AppTheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : Column(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppTheme.surfaceContainerLowest,
+                            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                            border: Border.all(color: AppTheme.outlineVariant),
+                          ),
+                          child: ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: _attachments.length,
+                            separatorBuilder: (_, __) => const Divider(height: 1),
+                            itemBuilder: (context, index) {
+                              final file = _attachments[index];
+                              return ListTile(
+                                leading: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.primaryContainer.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                                  ),
+                                  child: Icon(
+                                    _getFileIcon(file.name),
+                                    size: 20,
+                                    color: AppTheme.primary,
+                                  ),
+                                ),
+                                title: Text(
+                                  file.name,
+                                  style: AppTheme.bodyMedium.copyWith(color: AppTheme.onSurface),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                subtitle: Text(
+                                  '${(file.bytes.length / 1024).toStringAsFixed(1)} KB',
+                                  style: AppTheme.labelMedium.copyWith(color: AppTheme.onSurfaceVariant),
+                                ),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.close),
+                                  color: AppTheme.error,
+                                  onPressed: () => _removeAttachment(index),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: AppTheme.spacingMd),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: _pickFiles,
+                                icon: const Icon(Icons.add_photo_alternate),
+                                label: const Text('Tambah File'),
+                              ),
+                            ),
+                            const SizedBox(width: AppTheme.spacingMd),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: _openCamera,
+                                icon: const Icon(Icons.camera_alt),
+                                label: const Text('Kamera'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+              const SizedBox(height: AppTheme.spacingLg),
+
+              // Submit Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _submitTicket,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryContainer,
+                    foregroundColor: AppTheme.onPrimary,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacingLg,
+                      vertical: AppTheme.spacingMd,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                    ),
+                    elevation: AppTheme.elevationLevel2,
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: AppTheme.onPrimary,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.send, size: 20),
+                            SizedBox(width: AppTheme.spacingSm),
+                            Text('KIRIM TIKET'),
+                          ],
+                        ),
+                ),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  IconData _getFileIcon(String filename) {
+    final ext = filename.split('.').last.toLowerCase();
+    switch (ext) {
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+        return Icons.image;
+      case 'pdf':
+        return Icons.picture_as_pdf;
+      case 'doc':
+      case 'docx':
+        return Icons.description;
+      default:
+        return Icons.insert_drive_file;
+    }
+  }
+
+  Color getPriorityBadgeColor(String priority) {
+    switch (priority) {
+      case 'normal':
+        return AppTheme.secondaryContainer;
+      case 'medium':
+        return AppTheme.priorityMedium;
+      case 'high':
+        return AppTheme.errorContainer;
+      case 'urgent':
+        return AppTheme.error;
+      default:
+        return AppTheme.surface;
+    }
+  }
+
+  Color getPriorityBorderColor(String priority) {
+    switch (priority) {
+      case 'normal':
+        return AppTheme.secondaryContainer;
+      case 'medium':
+        return AppTheme.priorityMedium;
+      case 'high':
+        return AppTheme.errorContainer;
+      case 'urgent':
+        return AppTheme.error;
+      default:
+        return AppTheme.outline;
+    }
+  }
+
+  Color getPriorityTextColor(String priority) {
+    switch (priority) {
+      case 'normal':
+        return AppTheme.onSecondaryContainer;
+      case 'medium':
+        return AppTheme.priorityOnMedium;
+      case 'high':
+        return AppTheme.priorityOnHigh;
+      case 'urgent':
+        return AppTheme.onError;
+      default:
+        return AppTheme.onSurface;
+    }
   }
 }

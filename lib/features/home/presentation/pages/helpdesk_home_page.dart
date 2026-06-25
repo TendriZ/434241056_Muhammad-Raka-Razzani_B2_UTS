@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../dashboard/presentation/pages/dashboard_page.dart';
 import '../../../ticket/presentation/pages/ticket_list_page.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
@@ -28,8 +29,17 @@ class _HelpdeskHomePageState extends State<HelpdeskHomePage> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        selectedItemColor: Colors.amber.shade700,
-        unselectedItemColor: Colors.grey,
+        backgroundColor: AppTheme.surface,
+        selectedItemColor: AppTheme.secondary,
+        selectedLabelStyle: AppTheme.labelSmall.copyWith(
+          color: AppTheme.secondary,
+        ),
+        unselectedItemColor: AppTheme.onSurfaceVariant,
+        unselectedLabelStyle: AppTheme.labelSmall.copyWith(
+          color: AppTheme.onSurfaceVariant,
+        ),
+        type: BottomNavigationBarType.fixed,
+        elevation: AppTheme.elevationLevel1,
         onTap: (index) {
           setState(() {
             _currentIndex = index;
@@ -42,7 +52,7 @@ class _HelpdeskHomePageState extends State<HelpdeskHomePage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.confirmation_number),
-            label: 'Tiket Saya', // Biarkan framework menyesuaikan namanya
+            label: 'Tiket',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
@@ -53,4 +63,3 @@ class _HelpdeskHomePageState extends State<HelpdeskHomePage> {
     );
   }
 }
-
