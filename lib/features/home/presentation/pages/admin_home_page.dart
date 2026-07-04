@@ -32,9 +32,9 @@ class _AdminHomePageState extends State<AdminHomePage> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         backgroundColor: AppTheme.surface,
-        selectedItemColor: AppTheme.error,
+        selectedItemColor: AppTheme.primaryContainer,
         selectedLabelStyle: AppTheme.labelSmall.copyWith(
-          color: AppTheme.error,
+          color: AppTheme.primaryContainer,
         ),
         unselectedItemColor: AppTheme.onSurfaceVariant,
         unselectedLabelStyle: AppTheme.labelSmall.copyWith(
