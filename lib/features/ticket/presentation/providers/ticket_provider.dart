@@ -99,3 +99,13 @@ final ticketHistoryProvider = FutureProvider.family<List<Map<String, dynamic>>, 
   return List<Map<String, dynamic>>.from(response);
 });
 
+// Provider untuk mengambil daftar helpdesk users (untuk assign ticket - FR-007)
+final helpdeskUsersProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
+  final supabase = ref.watch(supabaseClientProvider);
+  final response = await supabase
+      .from('profiles')
+      .select()
+      .eq('role', 'helpdesk');
+  return List<Map<String, dynamic>>.from(response);
+});
+

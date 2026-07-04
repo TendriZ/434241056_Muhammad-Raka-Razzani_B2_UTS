@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/services/supabase_service.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
 import '../providers/ticket_provider.dart';
 
@@ -10,14 +11,416 @@ String _safeUserIdSubstring(String? userId) {
   return userId.length > 8 ? userId.substring(0, 8) : userId;
 }
 
-class TicketDetailPage extends ConsumerWidget {
+class TicketDetailPage extends ConsumerStatefulWidget {
   final String ticketId;
 
   const TicketDetailPage({super.key, required this.ticketId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final ticketAsync = ref.watch(ticketDetailProvider(ticketId));
+  ConsumerState<TicketDetailPage> createState() => _TicketDetailPageState();
+}
+
+class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
+  bool _isUpdatingStatus = false;
+  bool _isAssigning = false;
+  bool _isPostingComment = false;
+  final TextEditingController _commentController = TextEditingController();
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  // Add comment function (FR-007/BR-002)
+  Future<void> _addComment(String ticketId) async {
+    final comment = _commentController.text.trim();
+    if (comment.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Silakan tulis komentar terlebih dahulu')),
+        );
+      }
+      return;
+    }
+
+    setState(() => _isPostingComment = true);
+
+    try {
+      final supabase = ref.read(supabaseClientProvider);
+      final userId = supabase.auth.currentUser!.id;
+
+      // Insert comment ke ticket_history
+      await supabase.from('ticket_history').insert({
+        'ticket_id': ticketId,
+        'user_id': userId,
+        'action': 'Komentar',
+        'message': comment,
+      });
+
+      // Clear input
+      _commentController.clear();
+
+      // Invalidate providers to refresh UI
+      ref.invalidate(ticketHistoryProvider(ticketId));
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Komentar berhasil ditambahkan'),
+            backgroundColor: AppTheme.tertiaryContainer,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal menambahkan komentar: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isPostingComment = false);
+    }
+  }
+
+  // Delete ticket function (FR-007/BR-002) - Admin only
+  Future<void> _deleteTicket(String ticketId) async {
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: Text(
+          'Hapus Tiket',
+          style: AppTheme.titleMedium.copyWith(color: AppTheme.onSurface),
+        ),
+        content: Text(
+          'Apakah Anda yakin ingin menghapus tiket ini? Tindakan ini tidak dapat dibatalkan.',
+          style: AppTheme.bodyMedium.copyWith(color: AppTheme.onSurfaceVariant),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              'Batal',
+              style: AppTheme.labelLarge.copyWith(color: AppTheme.primary),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.error,
+              foregroundColor: AppTheme.onError,
+            ),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _isUpdatingStatus = true);
+
+    try {
+      final supabase = ref.read(supabaseClientProvider);
+
+      // Delete ticket (cascade will delete history & attachments)
+      await supabase.from('tickets').delete().eq('id', ticketId);
+
+      // Invalidate providers
+      ref.invalidate(ticketDetailProvider(ticketId));
+      ref.invalidate(ticketHistoryProvider(ticketId));
+      ref.invalidate(ticketStatsProvider);
+      ref.invalidate(ticketsProvider);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Tiket berhasil dihapus'),
+            backgroundColor: AppTheme.tertiaryContainer,
+          ),
+        );
+        Navigator.pop(context); // Go back to ticket list
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal menghapus tiket: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUpdatingStatus = false);
+    }
+  }
+
+  // Assign ticket to helpdesk function (FR-007)
+  // Ketika admin assign ke helpdesk, status otomatis berubah menjadi "on_progress"
+  Future<void> _assignTicket(String ticketId, String? helpdeskId, String? helpdeskName) async {
+    if (helpdeskId == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Silakan pilih helpdesk terlebih dahulu')),
+        );
+      }
+      return;
+    }
+
+    setState(() => _isAssigning = true);
+
+    try {
+      final supabase = ref.read(supabaseClientProvider);
+      final ticket = ref.read(ticketDetailProvider(ticketId)).value;
+      final oldAssignee = ticket?['assigned_to_name']?.toString() ?? 'Belum ada';
+      final oldStatus = ticket?['status']?.toString() ?? 'pending';
+      final userId = supabase.auth.currentUser!.id;
+
+      // Update ticket dengan assigned_to DAN status otomatis berubah ke on_progress
+      await supabase
+          .from('tickets')
+          .update({
+            'assigned_to': helpdeskId,
+            'status': 'on_progress', // Otomatis ubah status ke on_progress saat assign
+            'updated_at': DateTime.now().toIso8601String()
+          })
+          .eq('id', ticketId);
+
+      // Insert history record untuk assign
+      await supabase.from('ticket_history').insert({
+        'ticket_id': ticketId,
+        'user_id': userId,
+        'action': 'Assigned',
+        'message': 'Tiket ditugaskan dari $oldAssignee kepada $helpdeskName',
+      });
+
+      // Insert history record untuk status change
+      await supabase.from('ticket_history').insert({
+        'ticket_id': ticketId,
+        'user_id': userId,
+        'action': 'Update Status',
+        'message': 'Status otomatis diubah dari $oldStatus menjadi on_progress (karena ditugaskan)',
+        'status': 'on_progress',
+      });
+
+      // Invalidate providers to refresh UI
+      ref.invalidate(ticketDetailProvider(ticketId));
+      ref.invalidate(ticketHistoryProvider(ticketId));
+      ref.invalidate(ticketStatsProvider);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Tiket ditugaskan ke $helpdeskName & status menjadi Diproses'),
+            backgroundColor: AppTheme.tertiaryContainer,
+          ),
+        );
+        Navigator.pop(context); // Close bottom sheet
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal menugaskan tiket: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isAssigning = false);
+    }
+  }
+
+  // Finish ticket function untuk Helpdesk (FR-006)
+  // Ketika helpdesk selesai mengerjakan, status berubah menjadi "resolved"
+  Future<void> _finishTicket(String ticketId) async {
+    setState(() => _isUpdatingStatus = true);
+
+    try {
+      final supabase = ref.read(supabaseClientProvider);
+      final ticket = ref.read(ticketDetailProvider(ticketId)).value;
+      final oldStatus = ticket?['status']?.toString() ?? 'on_progress';
+      final userId = supabase.auth.currentUser!.id;
+
+      // Update ticket status ke resolved
+      await supabase
+          .from('tickets')
+          .update({'status': 'resolved', 'updated_at': DateTime.now().toIso8601String()})
+          .eq('id', ticketId);
+
+      // Insert history record
+      await supabase.from('ticket_history').insert({
+        'ticket_id': ticketId,
+        'user_id': userId,
+        'action': 'Update Status',
+        'message': 'Tiket selesai dikerjakan oleh helpdesk',
+        'status': 'resolved',
+      });
+
+      // Invalidate providers to refresh UI
+      ref.invalidate(ticketDetailProvider(ticketId));
+      ref.invalidate(ticketHistoryProvider(ticketId));
+      ref.invalidate(ticketStatsProvider);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Tiket selesai! Status berubah menjadi Selesai'),
+            backgroundColor: AppTheme.tertiaryContainer,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal menyelesaikan tiket: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUpdatingStatus = false);
+    }
+  }
+
+  // Show assign bottom sheet (for admin only - FR-007)
+  void _showAssignBottomSheet(BuildContext context, String ticketId) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        String? selectedHelpdeskId;
+        String? selectedHelpdeskName;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: AppTheme.surface,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusLg)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle
+              Container(
+                margin: EdgeInsets.only(top: AppTheme.spacingSm),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              // Header
+              Padding(
+                padding: EdgeInsets.all(AppTheme.spacingLg),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Tugaskan ke Helpdesk',
+                      style: AppTheme.titleLarge.copyWith(color: AppTheme.onSurface),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              // Helpdesk list
+              Consumer(
+                builder: (context, ref, child) {
+                  final helpdeskAsync = ref.watch(helpdeskUsersProvider);
+                  return helpdeskAsync.when(
+                    loading: () => const Padding(
+                      padding: EdgeInsets.all(AppTheme.spacingXl),
+                      child: CircularProgressIndicator(),
+                    ),
+                    error: (e, _) => Padding(
+                      padding: EdgeInsets.all(AppTheme.spacingLg),
+                      child: Text('Gagal memuat helpdesk: $e'),
+                    ),
+                    data: (helpdesks) {
+                      if (helpdesks.isEmpty) {
+                        return Padding(
+                          padding: EdgeInsets.all(AppTheme.spacingLg),
+                          child: Text(
+                            'Tidak ada helpdesk tersedia',
+                            style: AppTheme.bodyMedium.copyWith(color: AppTheme.onSurfaceVariant),
+                          ),
+                        );
+                      }
+
+                      return ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: helpdesks.length,
+                        separatorBuilder: (context, index) => Divider(
+                          color: AppTheme.outlineVariant,
+                          height: 1,
+                        ),
+                        itemBuilder: (context, index) {
+                          final helpdesk = helpdesks[index];
+                          final id = helpdesk['id']?.toString() ?? '';
+                          final name = helpdesk['name']?.toString() ?? 'No Name';
+                          final username = helpdesk['username']?.toString() ?? '';
+
+                          return RadioListTile<String>(
+                            title: Text(
+                              name,
+                              style: AppTheme.bodyLarge.copyWith(color: AppTheme.onSurface),
+                            ),
+                            subtitle: Text(
+                              '@$username',
+                              style: AppTheme.bodyMedium.copyWith(color: AppTheme.onSurfaceVariant),
+                            ),
+                            value: id,
+                            groupValue: selectedHelpdeskId,
+                            onChanged: (value) {
+                              selectedHelpdeskId = value;
+                              selectedHelpdeskName = name;
+                            },
+                            activeColor: AppTheme.primary,
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
+              ),
+              // Assign button
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(AppTheme.spacingLg),
+                child: ElevatedButton(
+                  onPressed: _isAssigning
+                      ? null
+                      : () => _assignTicket(ticketId, selectedHelpdeskId, selectedHelpdeskName),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: AppTheme.onPrimary,
+                    padding: EdgeInsets.symmetric(vertical: AppTheme.spacingMd),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                    ),
+                  ),
+                  child: _isAssigning
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Text('Tugaskan', style: AppTheme.labelLarge),
+                ),
+              ),
+              SizedBox(height: MediaQuery.of(context).padding.bottom),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ticketAsync = ref.watch(ticketDetailProvider(widget.ticketId));
     final profileAsync = ref.watch(userProfileProvider);
 
     return Scaffold(
@@ -30,7 +433,7 @@ class TicketDetailPage extends ConsumerWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          '#INC-2023-${ticketId.length > 6 ? ticketId.substring(0, 6) : ticketId}',
+          '#INC-2023-${widget.ticketId.length > 6 ? widget.ticketId.substring(0, 6) : widget.ticketId}',
           style: AppTheme.titleMedium.copyWith(color: AppTheme.primary),
         ),
         actions: [
@@ -38,7 +441,10 @@ class TicketDetailPage extends ConsumerWidget {
             data: (ticket) {
               if (ticket != null) {
                 final status = ticket['status']?.toString() ?? 'pending';
-                return Container(
+                final role = profileAsync.value?['role'] ?? 'user';
+
+                // Status badge untuk semua user
+                final statusBadge = Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppTheme.spacingSm,
                     vertical: 4,
@@ -62,14 +468,86 @@ class TicketDetailPage extends ConsumerWidget {
                     ],
                   ),
                 );
+
+                // Menu button untuk Admin (FR-007)
+                if (role == 'admin') {
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      statusBadge,
+                      const SizedBox(width: 8),
+                      // Menu with delete option
+                      PopupMenuButton<String>(
+                        icon: const Icon(Icons.more_vert, color: AppTheme.onSurfaceVariant),
+                        onSelected: (value) {
+                          if (value == 'delete') {
+                            _deleteTicket(widget.ticketId);
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          const PopupMenuItem<String>(
+                            value: 'delete',
+                            child: Row(
+                              children: [
+                                Icon(Icons.delete, color: AppTheme.error, size: 20),
+                                SizedBox(width: 12),
+                                Text(
+                                  'Hapus Tiket',
+                                  style: TextStyle(color: AppTheme.error),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                }
+
+                // Tombol Finish untuk Helpdesk jika status on_progress (FR-006)
+                if (role == 'helpdesk' && status == 'on_progress') {
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      statusBadge,
+                      const SizedBox(width: 8),
+                      // Finish button
+                      ElevatedButton.icon(
+                        onPressed: _isUpdatingStatus
+                            ? null
+                            : () => _finishTicket(widget.ticketId),
+                        icon: _isUpdatingStatus
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.check_circle, size: 18),
+                        label: const Text('Selesai'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.tertiary,
+                          foregroundColor: AppTheme.onTertiary,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppTheme.spacingMd,
+                            vertical: AppTheme.spacingSm,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                return statusBadge;
               }
               return const SizedBox();
             },
           ) ?? const SizedBox(),
-          IconButton(
-            icon: const Icon(Icons.more_vert, color: AppTheme.onSurfaceVariant),
-            onPressed: () {},
-          ),
         ],
       ),
       body: ticketAsync.when(
@@ -169,6 +647,15 @@ class TicketDetailPage extends ConsumerWidget {
                                     ticket['assigned_to_name'] ?? 'Belum ada',
                                   ),
                                 ),
+                                // Assign button for admin (FR-007)
+                                if (role == 'admin')
+                                  IconButton(
+                                    icon: const Icon(Icons.person_add, color: AppTheme.primary),
+                                    onPressed: () => _showAssignBottomSheet(context, widget.ticketId),
+                                    tooltip: 'Tugaskan ke Helpdesk',
+                                  )
+                                else
+                                  const SizedBox(width: 48),
                                 const SizedBox(width: AppTheme.spacingMd),
                                 Expanded(
                                   child: _buildInfoCard(
@@ -313,7 +800,7 @@ class TicketDetailPage extends ConsumerWidget {
                             ),
                           ),
                           const SizedBox(height: AppTheme.spacingSm),
-                          _TicketTimelineWidget(ticketId: ticketId),
+                          _TicketTimelineWidget(ticketId: widget.ticketId),
                         ],
                       ),
                     ],
@@ -349,6 +836,7 @@ class TicketDetailPage extends ConsumerWidget {
                     ),
                     Expanded(
                       child: TextField(
+                        controller: _commentController,
                         decoration: InputDecoration(
                           hintText: 'Tambah komentar...',
                           filled: true,
@@ -363,11 +851,22 @@ class TicketDetailPage extends ConsumerWidget {
                           ),
                         ),
                         maxLines: 1,
+                        onSubmitted: (_) => _addComment(widget.ticketId),
+                        enabled: !_isPostingComment,
                       ),
                     ),
                     const SizedBox(width: AppTheme.spacingSm),
                     IconButton(
-                      icon: const Icon(Icons.send),
+                      icon: _isPostingComment
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.send),
                       color: AppTheme.primary,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primary,
@@ -377,7 +876,9 @@ class TicketDetailPage extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                         ),
                       ),
-                      onPressed: () {},
+                      onPressed: _isPostingComment
+                          ? null
+                          : () => _addComment(widget.ticketId),
                     ),
                   ],
                 ),
