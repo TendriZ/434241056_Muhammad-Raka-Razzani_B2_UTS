@@ -31,14 +31,14 @@ class _AdminHomePageState extends State<AdminHomePage> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        backgroundColor: AppTheme.surface,
-        selectedItemColor: AppTheme.primaryContainer,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        selectedItemColor: Theme.of(context).colorScheme.primaryContainer,
         selectedLabelStyle: AppTheme.labelSmall.copyWith(
-          color: AppTheme.primaryContainer,
+          color: Theme.of(context).colorScheme.primaryContainer,
         ),
-        unselectedItemColor: AppTheme.onSurfaceVariant,
+        unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
         unselectedLabelStyle: AppTheme.labelSmall.copyWith(
-          color: AppTheme.onSurfaceVariant,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
         type: BottomNavigationBarType.fixed,
         elevation: AppTheme.elevationLevel1,

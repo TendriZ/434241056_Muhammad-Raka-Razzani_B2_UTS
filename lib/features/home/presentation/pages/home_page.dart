@@ -29,14 +29,14 @@ class _HomePageState extends State<HomePage> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        backgroundColor: AppTheme.surface,
-        selectedItemColor: AppTheme.primaryContainer,
-        unselectedItemColor: AppTheme.onSurfaceVariant,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        selectedItemColor: Theme.of(context).colorScheme.primaryContainer,
+        unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
         selectedLabelStyle: AppTheme.labelSmall.copyWith(
-          color: AppTheme.primaryContainer,
+          color: Theme.of(context).colorScheme.primaryContainer,
         ),
         unselectedLabelStyle: AppTheme.labelSmall.copyWith(
-          color: AppTheme.onSurfaceVariant,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
         type: BottomNavigationBarType.fixed,
         elevation: AppTheme.elevationLevel1,

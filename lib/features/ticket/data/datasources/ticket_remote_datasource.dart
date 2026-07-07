@@ -8,6 +8,7 @@ abstract class TicketRemoteDataSource {
     required String userId,
     required String title,
     required String description,
+    String priority = 'medium',
   });
 
   Future<List<TicketModel>> getTickets({
@@ -58,6 +59,7 @@ class TicketRemoteDataSourceImpl implements TicketRemoteDataSource {
     required String userId,
     required String title,
     required String description,
+    String priority = 'medium',
   }) async {
     try {
       final response = await supabaseClient.from('tickets').insert({
@@ -65,6 +67,7 @@ class TicketRemoteDataSourceImpl implements TicketRemoteDataSource {
         'title': title,
         'description': description,
         'status': 'pending',
+        'priority': priority,
         'created_at': DateTime.now().toIso8601String(),
       }).select().single();
 

@@ -90,7 +90,6 @@ class _SplashPageState extends ConsumerState<SplashPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.primary,
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -99,8 +98,8 @@ class _SplashPageState extends ConsumerState<SplashPage>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              AppTheme.primary,
-              AppTheme.primaryContainer,
+              Theme.of(context).colorScheme.primary,
+              Theme.of(context).colorScheme.primaryContainer,
             ],
           ),
         ),
@@ -120,11 +119,11 @@ class _SplashPageState extends ConsumerState<SplashPage>
                         width: 100,
                         height: 100,
                         decoration: BoxDecoration(
-                          color: AppTheme.onPrimary,
+                          color: Theme.of(context).colorScheme.onPrimary,
                           borderRadius: BorderRadius.circular(AppTheme.radiusXl),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
+                              color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.2),
                               blurRadius: 20,
                               offset: const Offset(0, 8),
                             ),
@@ -133,7 +132,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
                         child: Icon(
                           Icons.support_agent,
                           size: 60,
-                          color: AppTheme.primary,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                       const SizedBox(height: AppTheme.spacingLg),
@@ -142,14 +141,14 @@ class _SplashPageState extends ConsumerState<SplashPage>
                       Text(
                         'E-Ticketing',
                         style: AppTheme.headlineLarge.copyWith(
-                          color: AppTheme.onPrimary,
+                          color: Theme.of(context).colorScheme.onPrimary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
                         'Helpdesk System',
                         style: AppTheme.titleMedium.copyWith(
-                          color: AppTheme.onPrimary.withValues(alpha: 0.8),
+                          color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
                         ),
                       ),
                       const SizedBox(height: AppTheme.spacingXl),
@@ -160,8 +159,8 @@ class _SplashPageState extends ConsumerState<SplashPage>
                         height: 40,
                         child: CircularProgressIndicator(
                           strokeWidth: 3,
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            AppTheme.onPrimary,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Theme.of(context).colorScheme.onPrimary,
                           ),
                         ),
                       ),
@@ -171,7 +170,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
                       Text(
                         'Solusi Cepat untuk Kendala IT Anda',
                         style: AppTheme.bodyMedium.copyWith(
-                          color: AppTheme.onPrimary.withValues(alpha: 0.7),
+                          color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.7),
                         ),
                         textAlign: TextAlign.center,
                       ),

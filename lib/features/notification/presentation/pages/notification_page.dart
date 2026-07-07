@@ -12,13 +12,12 @@ class NotificationPage extends ConsumerWidget {
     final notificationState = ref.watch(notificationProvider);
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        backgroundColor: AppTheme.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: AppTheme.elevationLevel1,
         title: Text(
           'Notifikasi',
-          style: AppTheme.titleLarge.copyWith(color: AppTheme.primary),
+          style: AppTheme.titleLarge.copyWith(color: Theme.of(context).colorScheme.primary),
         ),
         actions: [
           if (notificationState.notifications.isNotEmpty) ...[
@@ -27,17 +26,17 @@ class NotificationPage extends ConsumerWidget {
                 ref.read(notificationProvider.notifier).markAllAsRead();
               },
               style: TextButton.styleFrom(
-                foregroundColor: AppTheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.primary,
               ),
               child: Text(
                 'Tandai Semua',
                 style: AppTheme.labelLarge.copyWith(
-                  color: AppTheme.primary,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.delete_outline, color: AppTheme.onSurfaceVariant),
+              icon: Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.onSurfaceVariant),
               onPressed: () {
                 _showClearDialog(context, ref);
               },
@@ -55,17 +54,17 @@ class NotificationPage extends ConsumerWidget {
               padding: const EdgeInsets.all(AppTheme.spacingMd),
               margin: const EdgeInsets.all(AppTheme.spacingMd),
               decoration: BoxDecoration(
-                color: AppTheme.primaryContainer.withValues(alpha: 0.1),
+                color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                 border: Border.all(
-                  color: AppTheme.primaryContainer.withValues(alpha: 0.3),
+                  color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
                 ),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.notifications_active,
-                    color: AppTheme.primary,
+                    color: Theme.of(context).colorScheme.primary,
                     size: 20,
                   ),
                   const SizedBox(width: AppTheme.spacingSm),
@@ -73,7 +72,7 @@ class NotificationPage extends ConsumerWidget {
                     child: Text(
                       '${notificationState.unreadCount} notifikasi belum dibaca',
                       style: AppTheme.bodyMedium.copyWith(
-                        color: AppTheme.primary,
+                        color: Theme.of(context).colorScheme.primary,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -85,7 +84,7 @@ class NotificationPage extends ConsumerWidget {
           // Notifications List
           Expanded(
             child: notificationState.notifications.isEmpty
-                ? _buildEmptyState()
+                ? _buildEmptyState(context)
                 : ListView.builder(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppTheme.spacingMd,
@@ -103,7 +102,7 @@ class NotificationPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -111,13 +110,13 @@ class NotificationPage extends ConsumerWidget {
           Icon(
             Icons.notifications_none,
             size: 80,
-            color: AppTheme.onSurfaceVariant,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: AppTheme.spacingLg),
           Text(
             'Belum Ada Notifikasi',
             style: AppTheme.titleMedium.copyWith(
-              color: AppTheme.onSurface,
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -125,7 +124,7 @@ class NotificationPage extends ConsumerWidget {
           Text(
             'Notifikasi akan muncul di sini',
             style: AppTheme.bodyMedium.copyWith(
-              color: AppTheme.onSurfaceVariant,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -143,19 +142,19 @@ class NotificationPage extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: AppTheme.spacingSm),
       decoration: BoxDecoration(
-        color: isRead ? AppTheme.surfaceContainerLow : AppTheme.surface,
+        color: isRead ? Theme.of(context).colorScheme.surfaceContainerLow : Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
         border: Border.all(
           color: isRead
-              ? AppTheme.outlineVariant.withValues(alpha: 0.5)
-              : AppTheme.primaryContainer.withValues(alpha: 0.3),
+              ? Theme.of(context).colorScheme.outlineVariant.withOpacity(0.5)
+              : Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
           width: 1,
         ),
         boxShadow: isRead
             ? null
             : [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Theme.of(context).colorScheme.shadow.withOpacity(0.05),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -180,15 +179,15 @@ class NotificationPage extends ConsumerWidget {
                 height: 48,
                 decoration: BoxDecoration(
                   color: isRead
-                      ? AppTheme.surfaceContainerHigh
-                      : AppTheme.primaryContainer.withValues(alpha: 0.15),
+                      ? Theme.of(context).colorScheme.surfaceContainerHigh
+                      : Theme.of(context).colorScheme.primaryContainer.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                 ),
                 child: Icon(
                   _getNotificationIcon(notification.title),
                   color: isRead
-                      ? AppTheme.onSurfaceVariant
-                      : AppTheme.primary,
+                      ? Theme.of(context).colorScheme.onSurfaceVariant
+                      : Theme.of(context).colorScheme.primary,
                   size: 24,
                 ),
               ),
@@ -202,7 +201,7 @@ class NotificationPage extends ConsumerWidget {
                     Text(
                       notification.title,
                       style: AppTheme.titleSmall.copyWith(
-                        color: AppTheme.onSurface,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: isRead ? FontWeight.normal : FontWeight.w600,
                       ),
                     ),
@@ -210,7 +209,7 @@ class NotificationPage extends ConsumerWidget {
                     Text(
                       notification.message,
                       style: AppTheme.bodyMedium.copyWith(
-                        color: AppTheme.onSurfaceVariant,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -219,7 +218,7 @@ class NotificationPage extends ConsumerWidget {
                     Text(
                       _formatTime(notification.createdAt),
                       style: AppTheme.labelSmall.copyWith(
-                        color: AppTheme.onSurfaceVariant,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -232,11 +231,11 @@ class NotificationPage extends ConsumerWidget {
                   width: 10,
                   height: 10,
                   decoration: BoxDecoration(
-                    color: AppTheme.primary,
+                    color: Theme.of(context).colorScheme.primary,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.primary.withValues(alpha: 0.4),
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.4),
                         blurRadius: 4,
                       ),
                     ],
@@ -293,7 +292,7 @@ class NotificationPage extends ConsumerWidget {
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             style: TextButton.styleFrom(
-              foregroundColor: AppTheme.onSurfaceVariant,
+              foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             child: const Text('Batal'),
           ),
@@ -303,7 +302,7 @@ class NotificationPage extends ConsumerWidget {
               Navigator.of(context).pop();
             },
             style: TextButton.styleFrom(
-              foregroundColor: AppTheme.error,
+              foregroundColor: Theme.of(context).colorScheme.error,
             ),
             child: const Text(
               'Hapus',

@@ -66,9 +66,9 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Komentar berhasil ditambahkan'),
-            backgroundColor: AppTheme.tertiaryContainer,
+          SnackBar(
+            content: const Text('Komentar berhasil ditambahkan'),
+            backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
           ),
         );
       }
@@ -89,28 +89,28 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         title: Text(
           'Hapus Tiket',
-          style: AppTheme.titleMedium.copyWith(color: AppTheme.onSurface),
+          style: AppTheme.titleMedium.copyWith(color: Theme.of(context).colorScheme.onSurface),
         ),
         content: Text(
           'Apakah Anda yakin ingin menghapus tiket ini? Tindakan ini tidak dapat dibatalkan.',
-          style: AppTheme.bodyMedium.copyWith(color: AppTheme.onSurfaceVariant),
+          style: AppTheme.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: Text(
               'Batal',
-              style: AppTheme.labelLarge.copyWith(color: AppTheme.primary),
+              style: AppTheme.labelLarge.copyWith(color: Theme.of(context).colorScheme.primary),
             ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.error,
-              foregroundColor: AppTheme.onError,
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
             ),
             child: const Text('Hapus'),
           ),
@@ -136,9 +136,9 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Tiket berhasil dihapus'),
-            backgroundColor: AppTheme.tertiaryContainer,
+          SnackBar(
+            content: const Text('Tiket berhasil dihapus'),
+            backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
           ),
         );
         Navigator.pop(context); // Go back to ticket list
@@ -211,7 +211,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Tiket ditugaskan ke $helpdeskName & status menjadi Diproses'),
-            backgroundColor: AppTheme.tertiaryContainer,
+            backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
           ),
         );
         Navigator.pop(context); // Close bottom sheet
@@ -260,9 +260,9 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Tiket selesai! Status berubah menjadi Selesai'),
-            backgroundColor: AppTheme.tertiaryContainer,
+          SnackBar(
+            content: const Text('Tiket selesai! Status berubah menjadi Selesai'),
+            backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
           ),
         );
       }
@@ -289,7 +289,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
 
         return Container(
           decoration: BoxDecoration(
-            color: AppTheme.surface,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusLg)),
           ),
           child: Column(
@@ -301,7 +301,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppTheme.surfaceContainerHigh,
+                  color: Theme.of(context).colorScheme.surfaceContainerHigh,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -313,7 +313,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                   children: [
                     Text(
                       'Tugaskan ke Helpdesk',
-                      style: AppTheme.titleLarge.copyWith(color: AppTheme.onSurface),
+                      style: AppTheme.titleLarge.copyWith(color: Theme.of(context).colorScheme.onSurface),
                     ),
                     IconButton(
                       icon: const Icon(Icons.close),
@@ -341,7 +341,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                           padding: EdgeInsets.all(AppTheme.spacingLg),
                           child: Text(
                             'Tidak ada helpdesk tersedia',
-                            style: AppTheme.bodyMedium.copyWith(color: AppTheme.onSurfaceVariant),
+                            style: AppTheme.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                           ),
                         );
                       }
@@ -350,7 +350,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                         shrinkWrap: true,
                         itemCount: helpdesks.length,
                         separatorBuilder: (context, index) => Divider(
-                          color: AppTheme.outlineVariant,
+                          color: Theme.of(context).colorScheme.outlineVariant,
                           height: 1,
                         ),
                         itemBuilder: (context, index) {
@@ -362,11 +362,11 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                           return RadioListTile<String>(
                             title: Text(
                               name,
-                              style: AppTheme.bodyLarge.copyWith(color: AppTheme.onSurface),
+                              style: AppTheme.bodyLarge.copyWith(color: Theme.of(context).colorScheme.onSurface),
                             ),
                             subtitle: Text(
                               '@$username',
-                              style: AppTheme.bodyMedium.copyWith(color: AppTheme.onSurfaceVariant),
+                              style: AppTheme.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                             ),
                             value: id,
                             groupValue: selectedHelpdeskId,
@@ -374,7 +374,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                               selectedHelpdeskId = value;
                               selectedHelpdeskName = name;
                             },
-                            activeColor: AppTheme.primary,
+                            activeColor: Theme.of(context).colorScheme.primary,
                           );
                         },
                       );
@@ -391,8 +391,8 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                       ? null
                       : () => _assignTicket(ticketId, selectedHelpdeskId, selectedHelpdeskName),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
-                    foregroundColor: AppTheme.onPrimary,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     padding: EdgeInsets.symmetric(vertical: AppTheme.spacingMd),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(AppTheme.radiusMd),
@@ -424,17 +424,16 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
     final profileAsync = ref.watch(userProfileProvider);
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        backgroundColor: AppTheme.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: AppTheme.elevationLevel1,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.onSurfaceVariant),
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurfaceVariant),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           '#INC-2023-${widget.ticketId.length > 6 ? widget.ticketId.substring(0, 6) : widget.ticketId}',
-          style: AppTheme.titleMedium.copyWith(color: AppTheme.primary),
+          style: AppTheme.titleMedium.copyWith(color: Theme.of(context).colorScheme.primary),
         ),
         actions: [
           ticketAsync.whenOrNull(
@@ -478,22 +477,22 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                       const SizedBox(width: 8),
                       // Menu with delete option
                       PopupMenuButton<String>(
-                        icon: const Icon(Icons.more_vert, color: AppTheme.onSurfaceVariant),
+                        icon: Icon(Icons.more_vert, color: Theme.of(context).colorScheme.onSurfaceVariant),
                         onSelected: (value) {
                           if (value == 'delete') {
                             _deleteTicket(widget.ticketId);
                           }
                         },
                         itemBuilder: (context) => [
-                          const PopupMenuItem<String>(
+                          PopupMenuItem<String>(
                             value: 'delete',
                             child: Row(
                               children: [
-                                Icon(Icons.delete, color: AppTheme.error, size: 20),
+                                Icon(Icons.delete, color: Theme.of(context).colorScheme.error, size: 20),
                                 SizedBox(width: 12),
                                 Text(
                                   'Hapus Tiket',
-                                  style: TextStyle(color: AppTheme.error),
+                                  style: TextStyle(color: Theme.of(context).colorScheme.error),
                                 ),
                               ],
                             ),
@@ -528,8 +527,8 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                             : const Icon(Icons.check_circle, size: 18),
                         label: const Text('Selesai'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.tertiary,
-                          foregroundColor: AppTheme.onTertiary,
+                          backgroundColor: Theme.of(context).colorScheme.tertiary,
+                          foregroundColor: Theme.of(context).colorScheme.onTertiary,
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppTheme.spacingMd,
                             vertical: AppTheme.spacingSm,
@@ -558,7 +557,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
             return Center(
               child: Text(
                 'Tiket tidak ditemukan',
-                style: AppTheme.bodyLarge.copyWith(color: AppTheme.onSurfaceVariant),
+                style: AppTheme.bodyLarge.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
             );
           }
@@ -583,12 +582,12 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                         margin: const EdgeInsets.only(bottom: AppTheme.spacingLg),
                         padding: const EdgeInsets.all(AppTheme.spacingLg),
                         decoration: BoxDecoration(
-                          color: AppTheme.surfaceContainerLowest,
+                          color: Theme.of(context).colorScheme.surfaceContainerLowest,
                           borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                          border: Border.all(color: AppTheme.surfaceContainerHigh),
+                          border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHigh),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.03),
+                              color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.03),
                               blurRadius: 4,
                             ),
                           ],
@@ -600,7 +599,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                             Text(
                               ticket['title'] ?? 'Tanpa Judul',
                               style: AppTheme.titleLarge.copyWith(
-                                color: AppTheme.onSurface,
+                                color: Theme.of(context).colorScheme.onSurface,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -650,7 +649,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                                 // Assign button for admin (FR-007)
                                 if (role == 'admin')
                                   IconButton(
-                                    icon: const Icon(Icons.person_add, color: AppTheme.primary),
+                                    icon: Icon(Icons.person_add, color: Theme.of(context).colorScheme.primary),
                                     onPressed: () => _showAssignBottomSheet(context, widget.ticketId),
                                     tooltip: 'Tugaskan ke Helpdesk',
                                   )
@@ -674,12 +673,12 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                         margin: const EdgeInsets.only(bottom: AppTheme.spacingLg),
                         padding: const EdgeInsets.all(AppTheme.spacingLg),
                         decoration: BoxDecoration(
-                          color: AppTheme.surfaceContainerLowest,
+                          color: Theme.of(context).colorScheme.surfaceContainerLowest,
                           borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                          border: Border.all(color: AppTheme.surfaceContainerHigh),
+                          border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHigh),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.03),
+                              color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.03),
                               blurRadius: 4,
                             ),
                           ],
@@ -691,14 +690,14 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                               children: [
                                 Icon(
                                   Icons.description,
-                                  color: AppTheme.onSurfaceVariant,
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                                   size: 20,
                                 ),
                                 const SizedBox(width: AppTheme.spacingSm),
                                 Text(
                                   'Deskripsi Kendala',
                                   style: AppTheme.titleMedium.copyWith(
-                                    color: AppTheme.onSurface,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                   ),
                                 ),
                               ],
@@ -707,7 +706,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                             Text(
                               ticket['description'] ?? 'Tidak ada deskripsi',
                               style: AppTheme.bodyLarge.copyWith(
-                                color: AppTheme.onSurfaceVariant,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 height: 1.5,
                               ),
                             ),
@@ -722,12 +721,12 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                           margin: const EdgeInsets.only(bottom: AppTheme.spacingLg),
                           padding: const EdgeInsets.all(AppTheme.spacingLg),
                           decoration: BoxDecoration(
-                            color: AppTheme.surfaceContainerLowest,
+                            color: Theme.of(context).colorScheme.surfaceContainerLowest,
                             borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                            border: Border.all(color: AppTheme.surfaceContainerHigh),
+                            border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHigh),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.03),
+                                color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.03),
                                 blurRadius: 4,
                               ),
                             ],
@@ -739,14 +738,14 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                                 children: [
                                   Icon(
                                     Icons.attachment,
-                                    color: AppTheme.onSurfaceVariant,
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                                     size: 20,
                                   ),
                                   const SizedBox(width: AppTheme.spacingSm),
                                   Text(
                                     'Lampiran',
                                     style: AppTheme.titleMedium.copyWith(
-                                      color: AppTheme.onSurface,
+                                      color: Theme.of(context).colorScheme.onSurface,
                                     ),
                                   ),
                                 ],
@@ -763,7 +762,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                                       margin: const EdgeInsets.only(right: AppTheme.spacingSm),
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                                        border: Border.all(color: AppTheme.outlineVariant),
+                                        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                                       ),
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
@@ -772,7 +771,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                                           fit: BoxFit.cover,
                                           errorBuilder: (context, error, stackTrace) {
                                             return Container(
-                                              color: AppTheme.surfaceContainerLow,
+                                              color: Theme.of(context).colorScheme.surfaceContainerLow,
                                               child: const Center(
                                                 child: Icon(Icons.broken_image),
                                               ),
@@ -795,7 +794,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                           Text(
                             'Aktivitas & Komentar',
                             style: AppTheme.titleMedium.copyWith(
-                              color: AppTheme.onSurface,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -815,13 +814,13 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                   vertical: MediaQuery.of(context).padding.bottom,
                 ),
                 decoration: BoxDecoration(
-                  color: AppTheme.surface,
+                  color: Theme.of(context).colorScheme.surface,
                   border: Border(
-                    top: BorderSide(color: AppTheme.outlineVariant),
+                    top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
+                      color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.05),
                       blurRadius: 4,
                       offset: const Offset(0, -1),
                     ),
@@ -831,7 +830,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.add_circle),
-                      color: AppTheme.onSurfaceVariant,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       onPressed: () {},
                     ),
                     Expanded(
@@ -840,10 +839,10 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                         decoration: InputDecoration(
                           hintText: 'Tambah komentar...',
                           filled: true,
-                          fillColor: AppTheme.surfaceContainerLowest,
+                          fillColor: Theme.of(context).colorScheme.surfaceContainerLowest,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                            borderSide: const BorderSide(color: AppTheme.outline),
+                            borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: AppTheme.spacingMd,
@@ -867,10 +866,10 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                               ),
                             )
                           : const Icon(Icons.send),
-                      color: AppTheme.primary,
+                      color: Theme.of(context).colorScheme.primary,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primary,
-                        foregroundColor: AppTheme.onPrimary,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Theme.of(context).colorScheme.onPrimary,
                         padding: const EdgeInsets.all(AppTheme.spacingSm),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(AppTheme.radiusMd),
@@ -894,11 +893,11 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 18, color: AppTheme.onSurfaceVariant),
+        Icon(icon, size: 18, color: Theme.of(context).colorScheme.onSurfaceVariant),
         const SizedBox(width: 4),
         Text(
           text,
-          style: AppTheme.bodyMedium.copyWith(color: AppTheme.onSurfaceVariant),
+          style: AppTheme.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       ],
     );
@@ -910,12 +909,12 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
       children: [
         Text(
           label,
-          style: AppTheme.labelMedium.copyWith(color: AppTheme.onSurfaceVariant),
+          style: AppTheme.labelMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
         const SizedBox(height: 4),
         Text(
           value,
-          style: AppTheme.bodyMedium.copyWith(color: AppTheme.onSurface),
+          style: AppTheme.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurface),
         ),
       ],
     );
@@ -1008,7 +1007,7 @@ class _TicketTimelineWidget extends ConsumerWidget {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(
         child: Text('Gagal memuat history: $e',
-          style: AppTheme.bodyMedium.copyWith(color: AppTheme.error),
+          style: AppTheme.bodyMedium.copyWith(color: Theme.of(context).colorScheme.error),
         ),
       ),
       data: (records) {
@@ -1018,7 +1017,7 @@ class _TicketTimelineWidget extends ConsumerWidget {
               padding: const EdgeInsets.all(AppTheme.spacingLg),
               child: Text(
                 'Belum ada aktivitas',
-                style: AppTheme.bodyMedium.copyWith(color: AppTheme.onSurfaceVariant),
+                style: AppTheme.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
             ),
           );
@@ -1050,10 +1049,10 @@ class _TicketTimelineWidget extends ConsumerWidget {
                               height: isSystemUpdate ? 20 : 24,
                               decoration: BoxDecoration(
                                 color: isSystemUpdate
-                                    ? AppTheme.secondaryContainer
-                                    : (log['action'] == 'Komentar' ? AppTheme.surfaceVariant : AppTheme.primary),
+                                    ? Theme.of(context).colorScheme.secondaryContainer
+                                    : (log['action'] == 'Komentar' ? AppTheme.surfaceVariant : Theme.of(context).colorScheme.primary),
                                 border: Border.all(
-                                  color: AppTheme.background,
+                                  color: Theme.of(context).colorScheme.surface,
                                   width: 4,
                                 ),
                                 borderRadius: BorderRadius.circular(AppTheme.radiusFull),
@@ -1063,8 +1062,8 @@ class _TicketTimelineWidget extends ConsumerWidget {
                                   _getTimelineIcon(log['action']),
                                   size: isSystemUpdate ? 12 : 14,
                                   color: isSystemUpdate
-                                      ? AppTheme.onSecondaryContainer
-                                      : (log['action'] == 'Komentar' ? AppTheme.onSurface : AppTheme.onPrimary),
+                                      ? Theme.of(context).colorScheme.onSecondaryContainer
+                                      : (log['action'] == 'Komentar' ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onPrimary),
                                 ),
                               ),
                             ),
@@ -1072,8 +1071,8 @@ class _TicketTimelineWidget extends ConsumerWidget {
                             // Content
                             Expanded(
                               child: isSystemUpdate
-                                  ? _buildSystemUpdateItem(log)
-                                  : _buildCommentItem(log),
+                                  ? _buildSystemUpdateItem(context, log)
+                                  : _buildCommentItem(context, log),
                             ),
                           ],
                         ),
@@ -1089,16 +1088,16 @@ class _TicketTimelineWidget extends ConsumerWidget {
     );
   }
 
-  Widget _buildCommentItem(Map<String, dynamic> log) {
+  Widget _buildCommentItem(BuildContext context, Map<String, dynamic> log) {
     return Container(
       padding: const EdgeInsets.all(AppTheme.spacingMd),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceContainerLowest,
+        color: Theme.of(context).colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        border: Border.all(color: AppTheme.surfaceContainerHigh),
+        border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHigh),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.03),
             blurRadius: 4,
           ),
         ],
@@ -1112,14 +1111,14 @@ class _TicketTimelineWidget extends ConsumerWidget {
               Text(
                 _safeUserIdSubstring(log['user_id']?.toString()) ?? 'User',
                 style: AppTheme.labelLarge.copyWith(
-                  color: AppTheme.onSurface,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               Text(
                 _formatDateTime(log['created_at']),
                 style: AppTheme.labelMedium.copyWith(
-                  color: AppTheme.onSurfaceVariant,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -1127,14 +1126,14 @@ class _TicketTimelineWidget extends ConsumerWidget {
           const SizedBox(height: AppTheme.spacingSm),
           Text(
             log['message'] ?? '',
-            style: AppTheme.bodyMedium.copyWith(color: AppTheme.onSurfaceVariant),
+            style: AppTheme.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSystemUpdateItem(Map<String, dynamic> log) {
+  Widget _buildSystemUpdateItem(BuildContext context, Map<String, dynamic> log) {
     final action = log['action'] ?? '';
     final message = log['message'] ?? '';
 
@@ -1154,13 +1153,13 @@ class _TicketTimelineWidget extends ConsumerWidget {
         Text(
           'Sistem',
           style: AppTheme.bodyMedium.copyWith(
-            color: AppTheme.onSurface,
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.w500,
           ),
         ),
         Text(
           ' mengubah status dari ',
-          style: AppTheme.bodyMedium.copyWith(color: AppTheme.onSurfaceVariant),
+          style: AppTheme.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
         if (fromStatus != null)
           Container(
@@ -1169,12 +1168,12 @@ class _TicketTimelineWidget extends ConsumerWidget {
               vertical: 2,
             ),
             decoration: BoxDecoration(
-              color: AppTheme.surfaceContainerHigh,
+              color: Theme.of(context).colorScheme.surfaceContainerHigh,
               borderRadius: BorderRadius.circular(AppTheme.radiusSm),
             ),
             child: Text(
               _formatStatus(fromStatus),
-              style: AppTheme.bodySmall.copyWith(color: AppTheme.onSurface),
+              style: AppTheme.bodySmall.copyWith(color: Theme.of(context).colorScheme.onSurface),
             ),
           ),
         Text(' menjadi '),
@@ -1185,19 +1184,19 @@ class _TicketTimelineWidget extends ConsumerWidget {
               vertical: 2,
             ),
             decoration: BoxDecoration(
-              color: AppTheme.secondaryContainer,
+              color: Theme.of(context).colorScheme.secondaryContainer,
               borderRadius: BorderRadius.circular(AppTheme.radiusSm),
             ),
             child: Text(
               _formatStatus(toStatus),
-              style: AppTheme.bodySmall.copyWith(color: AppTheme.onSecondaryContainer),
+              style: AppTheme.bodySmall.copyWith(color: Theme.of(context).colorScheme.onSecondaryContainer),
             ),
           ),
         Text(' '),
         Text(
           _formatDateTime(log['created_at']),
           style: AppTheme.labelSmall.copyWith(
-            color: AppTheme.onSurfaceVariant,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
       ],

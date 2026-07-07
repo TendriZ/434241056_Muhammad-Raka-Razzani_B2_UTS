@@ -6,6 +6,7 @@ class TicketEntity {
   final String description;
   final String status; // 'pending', 'on_progress', 'resolved'
   final String? assignedTo; // Teknisi/helpdesk yang menangani
+  final String priority; // 'normal', 'medium', 'high', 'urgent'
   final DateTime createdAt;
   final DateTime? updatedAt;
 
@@ -16,6 +17,7 @@ class TicketEntity {
     required this.description,
     required this.status,
     this.assignedTo,
+    this.priority = 'medium',
     required this.createdAt,
     this.updatedAt,
   });
@@ -31,6 +33,7 @@ class TicketEntity {
           description == other.description &&
           status == other.status &&
           assignedTo == other.assignedTo &&
+          priority == other.priority &&
           createdAt == other.createdAt &&
           updatedAt == other.updatedAt;
 
@@ -42,12 +45,13 @@ class TicketEntity {
       description.hashCode ^
       status.hashCode ^
       assignedTo.hashCode ^
+      priority.hashCode ^
       createdAt.hashCode ^
       updatedAt.hashCode;
 
   @override
   String toString() {
-    return 'TicketEntity(id: $id, userId: $userId, title: $title, status: $status)';
+    return 'TicketEntity(id: $id, userId: $userId, title: $title, status: $status, priority: $priority)';
   }
 }
 

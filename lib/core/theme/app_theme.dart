@@ -450,6 +450,38 @@ class AppTheme {
   // DARK THEME
   // ============================================
 
+  // Dark theme palette
+  static const Color darkBackground = Color(0xFF1B1C1C);
+  static const Color darkOnBackground = Color(0xFFE3E2E2);
+  static const Color darkSurface = Color(0xFF1B1C1C);
+  static const Color darkOnSurface = Color(0xFFE3E2E2);
+  static const Color darkPrimary = Color(0xFF9ECAFF);
+  static const Color darkOnPrimary = Color(0xFFFFFFFF);
+  static const Color darkPrimaryContainer = Color(0xFF004A7C);
+  static const Color darkOnPrimaryContainer = Color(0xFFD1E4FF);
+  static const Color darkSecondary = Color(0xFFF5BF48);
+  static const Color darkOnSecondary = Color(0xFFFFFFFF);
+  static const Color darkSecondaryContainer = Color(0xFF544000);
+  static const Color darkOnSecondaryContainer = Color(0xFFFFDEA1);
+  static const Color darkTertiary = Color(0xFF6DD68B);
+  static const Color darkOnTertiary = Color(0xFFFFFFFF);
+  static const Color darkTertiaryContainer = Color(0xFF005318);
+  static const Color darkOnTertiaryContainer = Color(0xFF96F5B1);
+  static const Color darkError = Color(0xFFFFB4AB);
+  static const Color darkOnError = Color(0xFFFFFFFF);
+  static const Color darkErrorContainer = Color(0xFF93000A);
+  static const Color darkOnErrorContainer = Color(0xFFFFDAD6);
+  static const Color darkOutline = Color(0xFF8C919C);
+  static const Color darkOutlineVariant = Color(0xFF424851);
+  static const Color darkOnSurfaceVariant = Color(0xFFD4D6E0);
+  static const Color darkSurfaceDim = Color(0xFF1B1C1C);
+  static const Color darkSurfaceBright = Color(0xFF424242);
+  static const Color darkSurfaceContainerLowest = Color(0xFF111111);
+  static const Color darkSurfaceContainerLow = Color(0xFF1E1E1E);
+  static const Color darkSurfaceContainer = Color(0xFF252525);
+  static const Color darkSurfaceContainerHigh = Color(0xFF303030);
+  static const Color darkSurfaceContainerHighest = Color(0xFF3C3C3C);
+
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
@@ -457,42 +489,52 @@ class AppTheme {
       brightness: Brightness.dark,
 
       colorScheme: const ColorScheme.dark(
-        primary: primary,
-        onPrimary: onPrimary,
-        primaryContainer: primaryContainer,
-        onPrimaryContainer: onPrimaryContainer,
-        secondary: secondary,
-        onSecondary: onSecondary,
-        secondaryContainer: secondaryContainer,
-        onSecondaryContainer: onSecondaryContainer,
-        tertiary: tertiary,
-        onTertiary: onTertiary,
-        tertiaryContainer: tertiaryContainer,
-        onTertiaryContainer: onTertiaryContainer,
-        error: error,
-        onError: onError,
-        errorContainer: errorContainer,
-        onErrorContainer: onErrorContainer,
-        background: inverseSurface,
-        onBackground: inverseOnSurface,
-        surface: inverseSurface,
-        onSurface: inverseOnSurface,
-        surfaceVariant: surfaceVariant,
-        outline: outline,
-        outlineVariant: outlineVariant,
+        primary: darkPrimary,
+        onPrimary: darkOnPrimary,
+        primaryContainer: darkPrimaryContainer,
+        onPrimaryContainer: darkOnPrimaryContainer,
+        secondary: darkSecondary,
+        onSecondary: darkOnSecondary,
+        secondaryContainer: darkSecondaryContainer,
+        onSecondaryContainer: darkOnSecondaryContainer,
+        tertiary: darkTertiary,
+        onTertiary: darkOnTertiary,
+        tertiaryContainer: darkTertiaryContainer,
+        onTertiaryContainer: darkOnTertiaryContainer,
+        error: darkError,
+        onError: darkOnError,
+        errorContainer: darkErrorContainer,
+        onErrorContainer: darkOnErrorContainer,
+        surface: darkSurface,
+        onSurface: darkOnSurface,
+        surfaceDim: darkSurfaceDim,
+        surfaceBright: darkSurfaceBright,
+        surfaceContainerLowest: darkSurfaceContainerLowest,
+        surfaceContainerLow: darkSurfaceContainerLow,
+        surfaceContainer: darkSurfaceContainer,
+        surfaceContainerHigh: darkSurfaceContainerHigh,
+        surfaceContainerHighest: darkSurfaceContainerHighest,
+        outline: darkOutline,
+        outlineVariant: darkOutlineVariant,
       ),
 
-      scaffoldBackgroundColor: inverseSurface,
+      scaffoldBackgroundColor: darkBackground,
 
       appBarTheme: const AppBarTheme(
-        backgroundColor: inverseSurface,
-        foregroundColor: inverseOnSurface,
+        backgroundColor: darkSurface,
+        foregroundColor: darkOnSurface,
         elevation: elevationLevel1,
         centerTitle: false,
+        titleTextStyle: TextStyle(
+          fontFamily: fontFamily,
+          fontSize: 20,
+          fontWeight: FontWeight.w500,
+          color: darkPrimary,
+        ),
       ),
 
       cardTheme: CardThemeData(
-        color: surfaceDim,
+        color: darkSurfaceContainerLow,
         elevation: elevationLevel1,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusLg),
@@ -501,27 +543,138 @@ class AppTheme {
 
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: surfaceDim,
+        fillColor: darkSurfaceContainerHigh,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: spacingMd,
           vertical: 12,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusMd),
-          borderSide: const BorderSide(color: outline, width: 1),
+          borderSide: const BorderSide(color: darkOutline, width: 1),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radiusMd),
+          borderSide: const BorderSide(color: darkOutline, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusMd),
-          borderSide: const BorderSide(color: primary, width: 2),
+          borderSide: const BorderSide(color: darkPrimary, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radiusMd),
+          borderSide: const BorderSide(color: darkError, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radiusMd),
+          borderSide: const BorderSide(color: darkError, width: 2),
+        ),
+        labelStyle: labelLarge.copyWith(color: darkOnSurfaceVariant),
+        hintStyle: bodyMedium.copyWith(color: darkOnSurfaceVariant),
+      ),
+
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: darkPrimaryContainer,
+          foregroundColor: darkOnPrimaryContainer,
+          elevation: elevationLevel1,
+          padding: const EdgeInsets.symmetric(
+            horizontal: spacingLg,
+            vertical: spacingMd,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radiusMd),
+          ),
+          textStyle: labelLarge.copyWith(fontWeight: FontWeight.w500),
         ),
       ),
 
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: darkPrimary,
+          padding: const EdgeInsets.symmetric(
+            horizontal: spacingMd,
+            vertical: spacingSm,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radiusMd),
+          ),
+        ),
+      ),
+
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: darkPrimary,
+          padding: const EdgeInsets.symmetric(
+            horizontal: spacingLg,
+            vertical: spacingMd,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radiusMd),
+          ),
+          side: const BorderSide(color: darkOutline, width: 1),
+        ),
+      ),
+
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: darkPrimaryContainer,
+        foregroundColor: darkOnPrimaryContainer,
+        elevation: elevationLevel3,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radiusXl),
+        ),
+      ),
+
+      chipTheme: ChipThemeData(
+        backgroundColor: darkSurfaceContainerHigh,
+        selectedColor: darkPrimaryContainer,
+        labelStyle: labelMedium.copyWith(color: darkOnSurface),
+        secondaryLabelStyle: labelMedium.copyWith(color: darkOnSecondaryContainer),
+        padding: const EdgeInsets.symmetric(horizontal: spacingSm, vertical: spacingSm),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radiusFull),
+        ),
+        side: const BorderSide(color: darkOutline, width: 1),
+      ),
+
+      dividerTheme: const DividerThemeData(
+        color: darkOutlineVariant,
+        thickness: 1,
+        space: 1,
+      ),
+
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: surface,
-        selectedItemColor: primaryContainer,
-        unselectedItemColor: onSurfaceVariant,
+        backgroundColor: darkSurfaceContainerLow,
+        selectedItemColor: darkPrimary,
+        unselectedItemColor: darkOnSurfaceVariant,
         type: BottomNavigationBarType.fixed,
         elevation: elevationLevel1,
+        selectedLabelStyle: labelSmall.copyWith(color: darkPrimary, fontWeight: FontWeight.w600),
+        unselectedLabelStyle: labelSmall.copyWith(color: darkOnSurfaceVariant),
+      ),
+
+      iconTheme: const IconThemeData(
+        color: darkOnSurfaceVariant,
+        size: 24,
+      ),
+
+      listTileTheme: ListTileThemeData(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: spacingMd,
+          vertical: spacingSm,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radiusMd),
+        ),
+      ),
+
+      dialogTheme: DialogThemeData(
+        backgroundColor: darkSurfaceContainerLow,
+        elevation: elevationLevel2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radiusLg),
+        ),
+        titleTextStyle: headlineSmall.copyWith(color: darkOnSurface),
+        contentTextStyle: bodyMedium.copyWith(color: darkOnSurfaceVariant),
       ),
     );
   }

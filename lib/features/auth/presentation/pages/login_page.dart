@@ -40,7 +40,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Login Berhasil'),
-              backgroundColor: AppTheme.tertiaryContainer,
+              backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppTheme.radiusLg),
@@ -62,7 +62,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Login gagal: $e'),
-              backgroundColor: AppTheme.error,
+              backgroundColor: Theme.of(context).colorScheme.error,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppTheme.radiusLg),
@@ -79,16 +79,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final isLoading = ref.watch(authProvider).isLoading;
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              AppTheme.primary.withValues(alpha: 0.05),
-              AppTheme.surface,
-              AppTheme.primaryContainer.withValues(alpha: 0.08),
+              Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
+              Theme.of(context).colorScheme.surface,
+              Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.08),
             ],
           ),
         ),
@@ -110,10 +109,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       padding: const EdgeInsets.all(AppTheme.spacingLg),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppTheme.surface,
+                        color: Theme.of(context).colorScheme.surface,
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.primary.withValues(alpha: 0.2),
+                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),
@@ -122,7 +121,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       child: Icon(
                         Icons.support_agent_rounded,
                         size: 64,
-                        color: AppTheme.primary,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                     const SizedBox(height: AppTheme.spacingLg),
@@ -130,7 +129,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     Text(
                       'Selamat Datang Kembali!',
                       style: AppTheme.headlineMedium.copyWith(
-                        color: AppTheme.onSurface,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
@@ -139,7 +138,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     Text(
                       'Masuk untuk mengelola tiket Anda',
                       style: AppTheme.bodyMedium.copyWith(
-                        color: AppTheme.onSurfaceVariant,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -149,12 +148,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     Container(
                       padding: const EdgeInsets.all(AppTheme.spacingLg),
                       decoration: BoxDecoration(
-                        color: AppTheme.surface,
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(AppTheme.radiusXl),
-                        border: Border.all(color: AppTheme.outlineVariant),
+                        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
+                            color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.05),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),
@@ -189,7 +188,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             child: TextButton(
                               onPressed: () => context.push('/forgot-password'),
                               style: TextButton.styleFrom(
-                                foregroundColor: AppTheme.primary,
+                                foregroundColor: Theme.of(context).colorScheme.primary,
                               ),
                               child: Text(
                                 'Lupa Password?',
@@ -208,19 +207,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             child: ElevatedButton(
                               onPressed: isLoading ? null : _handleLogin,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.primaryContainer,
-                                foregroundColor: AppTheme.onPrimary,
+                                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                                foregroundColor: Theme.of(context).colorScheme.onPrimary,
                                 elevation: AppTheme.elevationLevel1,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                                 ),
                               ),
                               child: isLoading
-                                  ? const SizedBox(
+                                  ? SizedBox(
                                       height: 24,
                                       width: 24,
                                       child: CircularProgressIndicator(
-                                        color: AppTheme.onPrimary,
+                                        color: Theme.of(context).colorScheme.onPrimary,
                                         strokeWidth: 2.5,
                                       ),
                                     )
@@ -243,13 +242,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         Text(
                           'Belum punya akun?',
                           style: AppTheme.bodyMedium.copyWith(
-                            color: AppTheme.onSurfaceVariant,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                         TextButton(
                           onPressed: () => context.push('/register'),
                           style: TextButton.styleFrom(
-                            foregroundColor: AppTheme.primary,
+                            foregroundColor: Theme.of(context).colorScheme.primary,
                           ),
                           child: Text(
                             'Daftar di sini',
@@ -282,23 +281,23 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       obscureText: isPassword && !_isPasswordVisible,
       validator: validator,
       style: AppTheme.bodyLarge.copyWith(
-        color: AppTheme.onSurface,
+        color: Theme.of(context).colorScheme.onSurface,
         fontWeight: FontWeight.w500,
       ),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: AppTheme.bodyMedium.copyWith(
-          color: AppTheme.onSurfaceVariant,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
         prefixIcon: Icon(
           icon,
-          color: AppTheme.primary.withValues(alpha: 0.7),
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
         suffixIcon: isPassword
             ? IconButton(
                 icon: Icon(
                   _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                  color: AppTheme.onSurfaceVariant,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 onPressed: () {
                   setState(() {
@@ -308,32 +307,32 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               )
             : null,
         filled: true,
-        fillColor: AppTheme.surfaceContainerLowest,
+        fillColor: Theme.of(context).colorScheme.surfaceContainerLowest,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-          borderSide: const BorderSide(
-            color: AppTheme.outline,
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.outline,
             width: 1.5,
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-          borderSide: const BorderSide(
-            color: AppTheme.primary,
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.primary,
             width: 2,
           ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-          borderSide: const BorderSide(
-            color: AppTheme.error,
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.error,
             width: 1.5,
           ),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-          borderSide: const BorderSide(
-            color: AppTheme.error,
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.error,
             width: 2,
           ),
         ),

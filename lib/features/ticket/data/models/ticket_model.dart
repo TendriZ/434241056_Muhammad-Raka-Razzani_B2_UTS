@@ -3,24 +3,16 @@ import '../../domain/entities/ticket_entity.dart';
 
 class TicketModel extends TicketEntity {
   const TicketModel({
-    required String id,
-    required String userId,
-    required String title,
-    required String description,
-    required String status,
-    String? assignedTo,
-    required DateTime createdAt,
-    DateTime? updatedAt,
-  }) : super(
-    id: id,
-    userId: userId,
-    title: title,
-    description: description,
-    status: status,
-    assignedTo: assignedTo,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
-  );
+    required super.id,
+    required super.userId,
+    required super.title,
+    required super.description,
+    required super.status,
+    super.assignedTo,
+    super.priority = 'medium',
+    required super.createdAt,
+    super.updatedAt,
+  });
 
   factory TicketModel.fromJson(Map<String, dynamic> json) {
     return TicketModel(
@@ -30,6 +22,7 @@ class TicketModel extends TicketEntity {
       description: json['description'] as String? ?? '',
       status: json['status'] as String? ?? 'pending',
       assignedTo: json['assigned_to'] as String?,
+      priority: json['priority'] as String? ?? 'medium',
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
           : DateTime.now(),
@@ -47,6 +40,7 @@ class TicketModel extends TicketEntity {
       'description': description,
       'status': status,
       'assigned_to': assignedTo,
+      'priority': priority,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };
@@ -60,6 +54,7 @@ class TicketModel extends TicketEntity {
       description: entity.description,
       status: entity.status,
       assignedTo: entity.assignedTo,
+      priority: entity.priority,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     );
@@ -72,6 +67,7 @@ class TicketModel extends TicketEntity {
     String? description,
     String? status,
     String? assignedTo,
+    String? priority,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -82,6 +78,7 @@ class TicketModel extends TicketEntity {
       description: description ?? this.description,
       status: status ?? this.status,
       assignedTo: assignedTo ?? this.assignedTo,
+      priority: priority ?? this.priority,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -90,22 +87,14 @@ class TicketModel extends TicketEntity {
 
 class TicketHistoryModel extends TicketHistoryEntity {
   const TicketHistoryModel({
-    required String id,
-    required String ticketId,
-    required String userId,
-    required String action,
-    required String message,
-    String? status,
-    required DateTime createdAt,
-  }) : super(
-    id: id,
-    ticketId: ticketId,
-    userId: userId,
-    action: action,
-    message: message,
-    status: status,
-    createdAt: createdAt,
-  );
+    required super.id,
+    required super.ticketId,
+    required super.userId,
+    required super.action,
+    required super.message,
+    super.status,
+    required super.createdAt,
+  });
 
   factory TicketHistoryModel.fromJson(Map<String, dynamic> json) {
     return TicketHistoryModel(

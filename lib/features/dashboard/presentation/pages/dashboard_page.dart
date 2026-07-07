@@ -13,18 +13,17 @@ class DashboardPage extends ConsumerWidget {
     final ticketsAsync = ref.watch(ticketsProvider);
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        backgroundColor: AppTheme.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: AppTheme.elevationLevel1,
         automaticallyImplyLeading: false,
         title: Text(
           'Dashboard',
-          style: AppTheme.titleLarge.copyWith(color: AppTheme.primary),
+          style: AppTheme.titleLarge.copyWith(color: Theme.of(context).colorScheme.primary),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: AppTheme.onSurfaceVariant),
+            icon: Icon(Icons.notifications_outlined, color: Theme.of(context).colorScheme.onSurfaceVariant),
             onPressed: () {
               context.push('/notification');
             },
@@ -41,7 +40,7 @@ class DashboardPage extends ConsumerWidget {
             Text(
               'Statistik Tiket',
               style: AppTheme.headlineSmall.copyWith(
-                color: AppTheme.onSurface,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -49,7 +48,7 @@ class DashboardPage extends ConsumerWidget {
             Text(
               'Ringkasan tiket saat ini',
               style: AppTheme.bodyMedium.copyWith(
-                color: AppTheme.onSurfaceVariant,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: AppTheme.spacingLg),
@@ -62,7 +61,7 @@ class DashboardPage extends ConsumerWidget {
               error: (err, _) => Center(
                 child: Text(
                   'Error: $err',
-                  style: AppTheme.bodyMedium.copyWith(color: AppTheme.error),
+                  style: AppTheme.bodyMedium.copyWith(color: Theme.of(context).colorScheme.error),
                 ),
               ),
               data: (stats) => GridView.count(
@@ -74,27 +73,31 @@ class DashboardPage extends ConsumerWidget {
                 childAspectRatio: 1.5,
                 children: [
                   _buildStatCard(
+                    context,
                     'Total Tiket',
                     '${stats['total']}',
-                    AppTheme.primary,
+                    Theme.of(context).colorScheme.primary,
                     Icons.analytics_outlined,
                   ),
                   _buildStatCard(
+                    context,
                     'Open',
                     '${stats['pending']}',
-                    AppTheme.secondaryContainer,
+                    Theme.of(context).colorScheme.secondaryContainer,
                     Icons.pending_outlined,
                   ),
                   _buildStatCard(
+                    context,
                     'Diproses',
                     '${stats['on_progress']}',
-                    AppTheme.primaryContainer,
+                    Theme.of(context).colorScheme.primaryContainer,
                     Icons.sync,
                   ),
                   _buildStatCard(
+                    context,
                     'Selesai',
                     '${stats['resolved']}',
-                    AppTheme.tertiaryContainer,
+                    Theme.of(context).colorScheme.tertiaryContainer,
                     Icons.check_circle_outline,
                   ),
                 ],
@@ -106,7 +109,7 @@ class DashboardPage extends ConsumerWidget {
             Text(
               'Aktivitas Terbaru',
               style: AppTheme.titleLarge.copyWith(
-                color: AppTheme.onSurface,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -120,7 +123,7 @@ class DashboardPage extends ConsumerWidget {
               error: (err, _) => Center(
                 child: Text(
                   'Tidak dapat memuat aktivitas terbaru.',
-                  style: AppTheme.bodyMedium.copyWith(color: AppTheme.error),
+                  style: AppTheme.bodyMedium.copyWith(color: Theme.of(context).colorScheme.error),
                 ),
               ),
               data: (tickets) {
@@ -133,13 +136,13 @@ class DashboardPage extends ConsumerWidget {
                           Icon(
                             Icons.inbox_outlined,
                             size: 64,
-                            color: AppTheme.onSurfaceVariant,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                           const SizedBox(height: AppTheme.spacingMd),
                           Text(
                             'Belum ada tiket yang dibuat',
                             style: AppTheme.bodyMedium.copyWith(
-                              color: AppTheme.onSurfaceVariant,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -157,12 +160,12 @@ class DashboardPage extends ConsumerWidget {
                     return Container(
                       margin: const EdgeInsets.only(bottom: AppTheme.spacingSm),
                       decoration: BoxDecoration(
-                        color: AppTheme.surface,
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                        border: Border.all(color: AppTheme.outlineVariant),
+                        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.03),
+                            color: Theme.of(context).colorScheme.shadow.withOpacity(0.03),
                             blurRadius: 4,
                           ),
                         ],
@@ -176,31 +179,31 @@ class DashboardPage extends ConsumerWidget {
                           width: 40,
                           height: 40,
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryContainer.withValues(alpha: 0.15),
+                            color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                           ),
                           child: Icon(
                             Icons.history,
-                            color: AppTheme.primary,
+                            color: Theme.of(context).colorScheme.primary,
                             size: 20,
                           ),
                         ),
                         title: Text(
                           ticket['title'] ?? 'Tanpa Judul',
                           style: AppTheme.titleSmall.copyWith(
-                            color: AppTheme.onSurface,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                         subtitle: Text(
                           'Status: ${_formatStatus(ticket['status'] ?? 'Pending')}',
                           style: AppTheme.bodySmall.copyWith(
-                            color: AppTheme.onSurfaceVariant,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                         trailing: Text(
                           _formatTime(ticket['created_at']),
                           style: AppTheme.labelSmall.copyWith(
-                            color: AppTheme.onSurfaceVariant,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ),
@@ -215,10 +218,11 @@ class DashboardPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatCard(String title, String count, Color color, IconData icon) {
+  Widget _buildStatCard(BuildContext context, String title, String count, Color color, IconData icon) {
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surface,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
         border: Border.all(
           color: color.withValues(alpha: 0.3),
@@ -269,7 +273,7 @@ class DashboardPage extends ConsumerWidget {
           Text(
             title,
             style: AppTheme.labelMedium.copyWith(
-              color: AppTheme.onSurfaceVariant,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w600,
             ),
             maxLines: 1,

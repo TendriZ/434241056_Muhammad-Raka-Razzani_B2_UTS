@@ -7,6 +7,7 @@ abstract class TicketRepository {
   Future<TicketEntity> createTicket({
     required String title,
     required String description,
+    String priority = 'medium',
   });
 
   /// FR-006: Get tickets dengan role-based filtering

@@ -25,30 +25,30 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
   Color _getPriorityColor(String? priority) {
     switch (priority?.toLowerCase()) {
       case 'normal':
-        return AppTheme.secondaryContainer;
+        return Theme.of(context).colorScheme.secondaryContainer;
       case 'medium':
-        return AppTheme.priorityMedium;
+        return Theme.of(context).colorScheme.tertiaryContainer;
       case 'high':
-        return AppTheme.errorContainer;
+        return Theme.of(context).colorScheme.errorContainer;
       case 'urgent':
-        return AppTheme.error;
+        return Theme.of(context).colorScheme.error;
       default:
-        return AppTheme.surfaceVariant;
+        return Theme.of(context).colorScheme.surfaceContainerHighest;
     }
   }
 
   Color _getPriorityTextColor(String? priority) {
     switch (priority?.toLowerCase()) {
       case 'normal':
-        return AppTheme.onSecondaryContainer;
+        return Theme.of(context).colorScheme.onSecondaryContainer;
       case 'medium':
-        return AppTheme.priorityOnMedium;
+        return Theme.of(context).colorScheme.onTertiaryContainer;
       case 'high':
-        return AppTheme.priorityOnHigh;
+        return Theme.of(context).colorScheme.onErrorContainer;
       case 'urgent':
-        return AppTheme.onError;
+        return Theme.of(context).colorScheme.onError;
       default:
-        return AppTheme.onSurface;
+        return Theme.of(context).colorScheme.onSurface;
     }
   }
 
@@ -69,17 +69,16 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
     final role = profileAsync.value?['role'] ?? 'user';
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        backgroundColor: AppTheme.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: AppTheme.elevationLevel1,
         leading: IconButton(
-          icon: const Icon(Icons.menu, color: AppTheme.onSurfaceVariant),
+          icon: Icon(Icons.menu, color: Theme.of(context).colorScheme.onSurfaceVariant),
           onPressed: () {},
         ),
         title: Text(
           'IT Support',
-          style: AppTheme.titleLarge.copyWith(color: AppTheme.primary),
+          style: AppTheme.titleLarge.copyWith(color: Theme.of(context).colorScheme.primary),
         ),
         actions: [
           Container(
@@ -90,7 +89,7 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
               color: AppTheme.surfaceVariant,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.person, size: 16, color: AppTheme.onSurfaceVariant),
+            child: Icon(Icons.person, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
         ],
       ),
@@ -111,14 +110,14 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
                     Text(
                       'Daftar Tiket',
                       style: AppTheme.headlineMedium.copyWith(
-                        color: AppTheme.onSurface,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       role == 'user' ? 'Kelola dan pantau semua permintaan dukungan teknis Anda' : 'Kelola semua tiket masuk',
-                      style: AppTheme.bodyMedium.copyWith(color: AppTheme.onSurfaceVariant),
+                      style: AppTheme.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
@@ -127,12 +126,12 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
                 // Search Bar
                 Container(
                   decoration: BoxDecoration(
-                    color: AppTheme.surfaceContainerLowest,
+                    color: Theme.of(context).colorScheme.surfaceContainerLowest,
                     borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                    border: Border.all(color: AppTheme.outlineVariant),
+                    border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
+                        color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.05),
                         blurRadius: 4,
                       ),
                     ],
@@ -141,13 +140,13 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
                     controller: _searchController,
                     decoration: InputDecoration(
                       hintText: 'Cari ID tiket, subjek, atau nama...',
-                      prefixIcon: const Icon(Icons.search, color: AppTheme.onSurfaceVariant),
+                      prefixIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.onSurfaceVariant),
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: AppTheme.spacingMd,
                         vertical: 12,
                       ),
-                      hintStyle: AppTheme.bodyLarge.copyWith(color: AppTheme.onSurfaceVariant),
+                      hintStyle: AppTheme.bodyLarge.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                     ),
                     onChanged: (value) {
                       setState(() {});
@@ -177,16 +176,16 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
                           onSelected: (selected) {
                             setState(() => _selectedFilter = filter);
                           },
-                          backgroundColor: AppTheme.surfaceContainerLow,
-                          selectedColor: AppTheme.primaryContainer,
+                          backgroundColor: Theme.of(context).colorScheme.surfaceContainerLow,
+                          selectedColor: Theme.of(context).colorScheme.primaryContainer,
                           labelStyle: AppTheme.labelLarge.copyWith(
-                            color: isSelected ? AppTheme.onPrimaryContainer : AppTheme.onSurfaceVariant,
+                            color: isSelected ? Theme.of(context).colorScheme.onPrimaryContainer : Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                           ),
                           side: BorderSide(
-                            color: isSelected ? AppTheme.primaryContainer : AppTheme.outlineVariant,
+                            color: isSelected ? Theme.of(context).colorScheme.primaryContainer : Theme.of(context).colorScheme.outlineVariant,
                           ),
                         ),
                       );
@@ -234,12 +233,12 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
                         Icon(
                           Icons.inbox_outlined,
                           size: 64,
-                          color: AppTheme.onSurfaceVariant,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         const SizedBox(height: AppTheme.spacingMd),
                         Text(
                           role == 'user' ? 'Belum ada tiket yang dibuat' : 'Belum ada keluhan masuk',
-                          style: AppTheme.bodyLarge.copyWith(color: AppTheme.onSurfaceVariant),
+                          style: AppTheme.bodyLarge.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                         ),
                       ],
                     ),
@@ -267,14 +266,14 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
                         margin: const EdgeInsets.only(bottom: AppTheme.spacingMd),
                         padding: const EdgeInsets.all(AppTheme.spacingMd),
                         decoration: BoxDecoration(
-                          color: AppTheme.surfaceContainerLowest,
+                          color: Theme.of(context).colorScheme.surfaceContainerLowest,
                           borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                           border: Border.all(
-                            color: AppTheme.outlineVariant.withValues(alpha: 0.5),
+                            color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5),
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.03),
+                              color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.03),
                               blurRadius: 4,
                             ),
                           ],
@@ -291,7 +290,7 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
                                     Text(
                                       '#${_safeSubstring(ticket['id']?.toString() ?? '', 8) ?? 'TK-000'}',
                                       style: AppTheme.labelMedium.copyWith(
-                                        color: AppTheme.onSurfaceVariant,
+                                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                                         letterSpacing: 1,
                                       ),
                                     ),
@@ -309,13 +308,13 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           if (priority == 'urgent')
-                                            const Icon(Icons.error, size: 12, color: AppTheme.onError)
+                                            Icon(Icons.error, size: 12, color: priorityTextColor)
                                           else if (priority == 'high')
-                                            const Icon(Icons.warning, size: 12, color: AppTheme.priorityOnHigh)
+                                            Icon(Icons.warning, size: 12, color: priorityTextColor)
                                           else if (priority == 'medium')
-                                            const Icon(Icons.info, size: 12, color: AppTheme.priorityOnMedium)
+                                            Icon(Icons.info, size: 12, color: priorityTextColor)
                                           else
-                                            const Icon(Icons.info_outline, size: 12, color: AppTheme.priorityOnNormal),
+                                            Icon(Icons.info_outline, size: 12, color: priorityTextColor),
                                           const SizedBox(width: 4),
                                           Text(
                                             _capitalizeFirst(priority),
@@ -331,7 +330,7 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
                                 Text(
                                   _formatDate(ticket['created_at']),
                                   style: AppTheme.labelMedium.copyWith(
-                                    color: AppTheme.onSurfaceVariant,
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                               ],
@@ -342,7 +341,7 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
                             Text(
                               ticket['title'] ?? 'Tanpa Judul',
                               style: AppTheme.titleMedium.copyWith(
-                                color: AppTheme.onSurface,
+                                color: Theme.of(context).colorScheme.onSurface,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -359,7 +358,7 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
                                     (ticket['description']?.toString().length ?? 0).clamp(0, 100),
                                   ),
                               style: AppTheme.bodyMedium.copyWith(
-                                color: AppTheme.onSurfaceVariant,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                               ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
@@ -389,12 +388,12 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
                                 if (role != 'user' && ticket['assigned_to'] != null)
                                   Row(
                                     children: [
-                                      const Icon(Icons.person, size: 16, color: AppTheme.onSurfaceVariant),
+Icon(Icons.person, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
                                       const SizedBox(width: 4),
                                       Text(
                                         (ticket['assigned_to_name'] ?? 'Assignee').toString().split(' ')[0],
                                         style: AppTheme.labelMedium.copyWith(
-                                          color: AppTheme.onSurfaceVariant,
+                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                                         ),
                                       ),
                                     ],
@@ -417,8 +416,8 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
               onPressed: () {
                 context.push('/ticket/create');
               },
-              backgroundColor: AppTheme.primaryContainer,
-              foregroundColor: AppTheme.onPrimary,
+              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
               elevation: AppTheme.elevationLevel2,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppTheme.radiusXl),

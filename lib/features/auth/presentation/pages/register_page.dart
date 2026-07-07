@@ -28,17 +28,16 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        backgroundColor: AppTheme.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: AppTheme.elevationLevel1,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.onSurfaceVariant),
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurfaceVariant),
           onPressed: () => context.pop(),
         ),
         title: Text(
           'Daftar Akun',
-          style: AppTheme.titleLarge.copyWith(color: AppTheme.primary),
+          style: AppTheme.titleLarge.copyWith(color: Theme.of(context).colorScheme.primary),
         ),
       ),
       body: SafeArea(
@@ -56,13 +55,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryContainer.withValues(alpha: 0.1),
+                    color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(AppTheme.radiusXl),
                   ),
                   child: Icon(
                     Icons.person_add_rounded,
                     size: 40,
-                    color: AppTheme.primary,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
                 const SizedBox(height: AppTheme.spacingLg),
@@ -70,7 +69,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 Text(
                   'Buat Akun Baru',
                   style: AppTheme.headlineSmall.copyWith(
-                    color: AppTheme.onSurface,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
@@ -79,7 +78,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 Text(
                   'Silakan lengkapi data berikut untuk mendaftar',
                   style: AppTheme.bodyMedium.copyWith(
-                    color: AppTheme.onSurfaceVariant,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -89,12 +88,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 Container(
                   padding: const EdgeInsets.all(AppTheme.spacingLg),
                   decoration: BoxDecoration(
-                    color: AppTheme.surface,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(AppTheme.radiusXl),
-                    border: Border.all(color: AppTheme.outlineVariant),
+                    border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
+                        color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.05),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
@@ -160,7 +159,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: const Text('Pendaftaran Berhasil!'),
-                                      backgroundColor: AppTheme.tertiaryContainer,
+                                      backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
                                       behavior: SnackBarBehavior.floating,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
@@ -174,7 +173,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text('Pendaftaran gagal: $e'),
-                                      backgroundColor: AppTheme.error,
+                                      backgroundColor: Theme.of(context).colorScheme.error,
                                       behavior: SnackBarBehavior.floating,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
@@ -186,8 +185,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryContainer,
-                            foregroundColor: AppTheme.onPrimary,
+                            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                            foregroundColor: Theme.of(context).colorScheme.onPrimary,
                             elevation: AppTheme.elevationLevel1,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(AppTheme.radiusLg),
@@ -212,13 +211,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     Text(
                       'Sudah punya akun?',
                       style: AppTheme.bodyMedium.copyWith(
-                        color: AppTheme.onSurfaceVariant,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                     TextButton(
                       onPressed: () => context.pop(),
                       style: TextButton.styleFrom(
-                        foregroundColor: AppTheme.primary,
+                        foregroundColor: Theme.of(context).colorScheme.primary,
                       ),
                       child: Text(
                         'Login di sini',
@@ -249,45 +248,45 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       obscureText: isPassword,
       validator: validator,
       style: AppTheme.bodyLarge.copyWith(
-        color: AppTheme.onSurface,
+        color: Theme.of(context).colorScheme.onSurface,
         fontWeight: FontWeight.w500,
       ),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: AppTheme.bodyMedium.copyWith(
-          color: AppTheme.onSurfaceVariant,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
         prefixIcon: Icon(
           icon,
-          color: AppTheme.primary.withValues(alpha: 0.7),
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
         filled: true,
-        fillColor: AppTheme.surfaceContainerLowest,
+        fillColor: Theme.of(context).colorScheme.surfaceContainerLowest,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-          borderSide: const BorderSide(
-            color: AppTheme.outline,
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.outline,
             width: 1.5,
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-          borderSide: const BorderSide(
-            color: AppTheme.primary,
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.primary,
             width: 2,
           ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-          borderSide: const BorderSide(
-            color: AppTheme.error,
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.error,
             width: 1.5,
           ),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-          borderSide: const BorderSide(
-            color: AppTheme.error,
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.error,
             width: 2,
           ),
         ),

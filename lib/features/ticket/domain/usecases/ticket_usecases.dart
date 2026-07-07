@@ -11,10 +11,12 @@ class CreateTicketUseCase {
   Future<TicketEntity> call({
     required String title,
     required String description,
+    String priority = 'medium',
   }) async {
     return await repository.createTicket(
       title: title,
       description: description,
+      priority: priority,
     );
   }
 }

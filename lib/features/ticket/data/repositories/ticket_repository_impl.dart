@@ -17,6 +17,7 @@ class TicketRepositoryImpl implements TicketRepository {
   Future<TicketEntity> createTicket({
     required String title,
     required String description,
+    String priority = 'medium',
   }) async {
     if (title.isEmpty || description.isEmpty) {
       throw Exception('Title dan description tidak boleh kosong');
@@ -29,6 +30,7 @@ class TicketRepositoryImpl implements TicketRepository {
       userId: _currentUserId,
       title: title,
       description: description,
+      priority: priority,
     );
   }
 

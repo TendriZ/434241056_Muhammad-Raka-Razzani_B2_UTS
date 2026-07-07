@@ -29,14 +29,14 @@ class _HelpdeskHomePageState extends State<HelpdeskHomePage> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        backgroundColor: AppTheme.surface,
-        selectedItemColor: AppTheme.secondary,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        selectedItemColor: Theme.of(context).colorScheme.secondary,
         selectedLabelStyle: AppTheme.labelSmall.copyWith(
-          color: AppTheme.secondary,
+          color: Theme.of(context).colorScheme.secondary,
         ),
-        unselectedItemColor: AppTheme.onSurfaceVariant,
+        unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
         unselectedLabelStyle: AppTheme.labelSmall.copyWith(
-          color: AppTheme.onSurfaceVariant,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
         type: BottomNavigationBarType.fixed,
         elevation: AppTheme.elevationLevel1,

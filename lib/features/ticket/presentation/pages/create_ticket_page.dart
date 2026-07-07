@@ -75,9 +75,9 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Foto berhasil diambil!'),
-              backgroundColor: AppTheme.tertiaryContainer,
+            SnackBar(
+              content: const Text('Foto berhasil diambil!'),
+              backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
             ),
           );
         }
@@ -127,7 +127,7 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('$addedCount file berhasil dipilih'),
-              backgroundColor: AppTheme.tertiaryContainer,
+              backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
             ),
           );
         }
@@ -191,9 +191,9 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
       if (!mounted) return;
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Tiket berhasil dibuat!'),
-          backgroundColor: AppTheme.tertiaryContainer,
+        SnackBar(
+          content: const Text('Tiket berhasil dibuat!'),
+          backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
         ),
       );
     } catch (e) {
@@ -209,17 +209,16 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        backgroundColor: AppTheme.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: AppTheme.elevationLevel1,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.onSurfaceVariant),
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurfaceVariant),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'IT Support',
-          style: AppTheme.titleLarge.copyWith(color: AppTheme.primary),
+          style: AppTheme.titleLarge.copyWith(color: Theme.of(context).colorScheme.primary),
         ),
         actions: [
           Container(
@@ -230,7 +229,7 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
               color: AppTheme.surfaceVariant,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.person, size: 16, color: AppTheme.onSurfaceVariant),
+            child: Icon(Icons.person, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
         ],
       ),
@@ -247,24 +246,24 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
               // Header Section
               Text(
                 'Buat Tiket Baru',
-                style: AppTheme.headlineSmall.copyWith(color: AppTheme.onSurface),
+                style: AppTheme.headlineSmall.copyWith(color: Theme.of(context).colorScheme.onSurface),
               ),
               const SizedBox(height: AppTheme.spacingSm),
               Text(
                 'Silakan isi detail masalah yang Anda alami.',
-                style: AppTheme.bodyMedium.copyWith(color: AppTheme.onSurfaceVariant),
+                style: AppTheme.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
               const SizedBox(height: AppTheme.spacingLg),
 
               // Form Card
               Container(
                 decoration: BoxDecoration(
-                  color: AppTheme.surface,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                   border: Border.all(color: AppTheme.surfaceVariant),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
+                      color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.05),
                       blurRadius: 4,
                     ),
                   ],
@@ -276,7 +275,7 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                     // Title Input
                     Text(
                       'Judul Tiket',
-                      style: AppTheme.labelLarge.copyWith(color: AppTheme.onSurface),
+                      style: AppTheme.labelLarge.copyWith(color: Theme.of(context).colorScheme.onSurface),
                     ),
                     const SizedBox(height: AppTheme.spacingSm),
                     TextFormField(
@@ -284,25 +283,25 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                       decoration: InputDecoration(
                         hintText: 'Misal: Komputer tidak bisa menyala',
                         filled: true,
-                        fillColor: AppTheme.surfaceContainerLowest,
+                        fillColor: Theme.of(context).colorScheme.surfaceContainerLowest,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                          borderSide: const BorderSide(color: AppTheme.outline),
+                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                          borderSide: const BorderSide(color: AppTheme.outline),
+                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                          borderSide: const BorderSide(color: AppTheme.primary, width: 2),
+                          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: AppTheme.spacingMd,
                           vertical: 12,
                         ),
                       ),
-                      style: AppTheme.bodyLarge.copyWith(color: AppTheme.onSurface),
+                      style: AppTheme.bodyLarge.copyWith(color: Theme.of(context).colorScheme.onSurface),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Judul tidak boleh kosong';
@@ -315,7 +314,7 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                     // Description Input
                     Text(
                       'Deskripsi Masalah',
-                      style: AppTheme.labelLarge.copyWith(color: AppTheme.onSurface),
+                      style: AppTheme.labelLarge.copyWith(color: Theme.of(context).colorScheme.onSurface),
                     ),
                     const SizedBox(height: AppTheme.spacingSm),
                     TextFormField(
@@ -324,25 +323,25 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                       decoration: InputDecoration(
                         hintText: 'Jelaskan secara detail masalah yang terjadi...',
                         filled: true,
-                        fillColor: AppTheme.surfaceContainerLowest,
+                        fillColor: Theme.of(context).colorScheme.surfaceContainerLowest,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                          borderSide: const BorderSide(color: AppTheme.outline),
+                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                          borderSide: const BorderSide(color: AppTheme.outline),
+                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                          borderSide: const BorderSide(color: AppTheme.primary, width: 2),
+                          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: AppTheme.spacingMd,
                           vertical: 12,
                         ),
                       ),
-                      style: AppTheme.bodyLarge.copyWith(color: AppTheme.onSurface),
+                      style: AppTheme.bodyLarge.copyWith(color: Theme.of(context).colorScheme.onSurface),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Sertakan deskripsi masalah';
@@ -355,25 +354,25 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                     // Category Dropdown
                     Text(
                       'Kategori',
-                      style: AppTheme.labelLarge.copyWith(color: AppTheme.onSurface),
+                      style: AppTheme.labelLarge.copyWith(color: Theme.of(context).colorScheme.onSurface),
                     ),
                     const SizedBox(height: AppTheme.spacingSm),
                     DropdownButtonFormField<String>(
                       value: _selectedCategory,
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: AppTheme.surfaceContainerLowest,
+                        fillColor: Theme.of(context).colorScheme.surfaceContainerLowest,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                          borderSide: const BorderSide(color: AppTheme.outline),
+                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                          borderSide: const BorderSide(color: AppTheme.outline),
+                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                          borderSide: const BorderSide(color: AppTheme.primary, width: 2),
+                          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: AppTheme.spacingMd,
@@ -395,7 +394,7 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                     // Priority Chips
                     Text(
                       'Prioritas',
-                      style: AppTheme.labelLarge.copyWith(color: AppTheme.onSurface),
+                      style: AppTheme.labelLarge.copyWith(color: Theme.of(context).colorScheme.onSurface),
                     ),
                     const SizedBox(height: AppTheme.spacingMd),
                     Wrap(
@@ -411,33 +410,32 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                             ),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? AppTheme.getPriorityBadgeColor(priority['value'])
-                                  : AppTheme.surface,
+                                  ? getPriorityBadgeColor(priority['value'])
+                                  : Theme.of(context).colorScheme.surface,
                               border: Border.all(
                                 color: isSelected
-                                    ? AppTheme.getPriorityBorderColor(priority['value'])
-                                    : AppTheme.outline,
+                                    ? getPriorityBorderColor(priority['value'])
+                                    : Theme.of(context).colorScheme.outline,
                               ),
                               borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                if (priority['value'] == 'urgent')
-                                  const Icon(Icons.error, size: 14, color: AppTheme.onError)
-                                else if (priority['value'] == 'high')
-                                  const Icon(Icons.warning, size: 14, color: AppTheme.priorityOnHigh)
-                                else if (priority['value'] == 'medium')
-                                  const Icon(Icons.info, size: 14, color: AppTheme.priorityOnMedium)
-                                else
-                                  Icon(Icons.info_outline, size: 14, color: AppTheme.priorityOnNormal),
+                                Icon(
+                                  _chipIcon(priority['value']),
+                                  size: 14,
+                                  color: isSelected
+                                      ? getPriorityTextColor(priority['value'])
+                                      : Theme.of(context).colorScheme.onSurface,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   priority['label'],
                                   style: AppTheme.labelMedium.copyWith(
                                     color: isSelected
-                                        ? AppTheme.getPriorityTextColor(priority['value'])
-                                        : AppTheme.onSurface,
+                                        ? getPriorityTextColor(priority['value'])
+                                        : Theme.of(context).colorScheme.onSurface,
                                   ),
                                 ),
                               ],
@@ -454,7 +452,7 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
               // File Upload Section
               Text(
                 'Lampiran (Opsional)',
-                style: AppTheme.labelLarge.copyWith(color: AppTheme.onSurface),
+                style: AppTheme.labelLarge.copyWith(color: Theme.of(context).colorScheme.onSurface),
               ),
               const SizedBox(height: AppTheme.spacingSm),
 
@@ -469,9 +467,9 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                           vertical: AppTheme.spacingLg,
                         ),
                         decoration: BoxDecoration(
-                          color: AppTheme.surfaceContainerLowest,
+                          color: Theme.of(context).colorScheme.surfaceContainerLowest,
                           border: Border.all(
-                            color: AppTheme.outlineVariant,
+                            color: Theme.of(context).colorScheme.outlineVariant,
                             width: 2,
                             style: BorderStyle.solid,
                           ),
@@ -482,13 +480,13 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                             Icon(
                               Icons.cloud_upload_outlined,
                               size: 48,
-                              color: AppTheme.onSurfaceVariant,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                             ),
                             const SizedBox(height: AppTheme.spacingSm),
                             Text(
                               'Klik untuk unggah file atau seret ke sini',
                               style: AppTheme.bodyMedium.copyWith(
-                                color: AppTheme.onSurfaceVariant,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -496,7 +494,7 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                             Text(
                               'Maksimal 10MB (JPG, PNG, PDF)',
                               style: AppTheme.labelMedium.copyWith(
-                                color: AppTheme.onSurfaceVariant,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ],
@@ -507,9 +505,9 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                       children: [
                         Container(
                           decoration: BoxDecoration(
-                            color: AppTheme.surfaceContainerLowest,
+                            color: Theme.of(context).colorScheme.surfaceContainerLowest,
                             borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                            border: Border.all(color: AppTheme.outlineVariant),
+                            border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                           ),
                           child: ListView.separated(
                             shrinkWrap: true,
@@ -523,28 +521,28 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                                   width: 40,
                                   height: 40,
                                   decoration: BoxDecoration(
-                                    color: AppTheme.primaryContainer.withValues(alpha: 0.1),
+                                    color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(AppTheme.radiusSm),
                                   ),
                                   child: Icon(
                                     _getFileIcon(file.name),
                                     size: 20,
-                                    color: AppTheme.primary,
+                                    color: Theme.of(context).colorScheme.primary,
                                   ),
                                 ),
                                 title: Text(
                                   file.name,
-                                  style: AppTheme.bodyMedium.copyWith(color: AppTheme.onSurface),
+                                  style: AppTheme.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurface),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 subtitle: Text(
                                   '${(file.bytes.length / 1024).toStringAsFixed(1)} KB',
-                                  style: AppTheme.labelMedium.copyWith(color: AppTheme.onSurfaceVariant),
+                                  style: AppTheme.labelMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                                 ),
                                 trailing: IconButton(
                                   icon: const Icon(Icons.close),
-                                  color: AppTheme.error,
+                                  color: Theme.of(context).colorScheme.error,
                                   onPressed: () => _removeAttachment(index),
                                 ),
                               );
@@ -581,8 +579,8 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _submitTicket,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryContainer,
-                    foregroundColor: AppTheme.onPrimary,
+                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppTheme.spacingLg,
                       vertical: AppTheme.spacingMd,
@@ -593,11 +591,11 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                     elevation: AppTheme.elevationLevel2,
                   ),
                   child: _isLoading
-                      ? const SizedBox(
+                      ? SizedBox(
                           height: 20,
                           width: 20,
                           child: CircularProgressIndicator(
-                            color: AppTheme.onPrimary,
+                            color: Theme.of(context).colorScheme.onPrimary,
                             strokeWidth: 2,
                           ),
                         )
@@ -639,45 +637,47 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
   Color getPriorityBadgeColor(String priority) {
     switch (priority) {
       case 'normal':
-        return AppTheme.secondaryContainer;
+        return Theme.of(context).colorScheme.secondaryContainer;
       case 'medium':
-        return AppTheme.priorityMedium;
+        return Theme.of(context).colorScheme.tertiaryContainer;
       case 'high':
-        return AppTheme.errorContainer;
+        return Theme.of(context).colorScheme.errorContainer;
       case 'urgent':
-        return AppTheme.error;
+        return Theme.of(context).colorScheme.error;
       default:
-        return AppTheme.surface;
+        return Theme.of(context).colorScheme.surfaceContainerHighest;
     }
   }
 
   Color getPriorityBorderColor(String priority) {
-    switch (priority) {
-      case 'normal':
-        return AppTheme.secondaryContainer;
-      case 'medium':
-        return AppTheme.priorityMedium;
-      case 'high':
-        return AppTheme.errorContainer;
-      case 'urgent':
-        return AppTheme.error;
-      default:
-        return AppTheme.outline;
-    }
+    return getPriorityBadgeColor(priority);
   }
 
   Color getPriorityTextColor(String priority) {
     switch (priority) {
       case 'normal':
-        return AppTheme.onSecondaryContainer;
+        return Theme.of(context).colorScheme.onSecondaryContainer;
       case 'medium':
-        return AppTheme.priorityOnMedium;
+        return Theme.of(context).colorScheme.onTertiaryContainer;
       case 'high':
-        return AppTheme.priorityOnHigh;
+        return Theme.of(context).colorScheme.onErrorContainer;
       case 'urgent':
-        return AppTheme.onError;
+        return Theme.of(context).colorScheme.onError;
       default:
-        return AppTheme.onSurface;
+        return Theme.of(context).colorScheme.onSurface;
+    }
+  }
+
+  IconData _chipIcon(String priority) {
+    switch (priority) {
+      case 'urgent':
+        return Icons.error;
+      case 'high':
+        return Icons.warning;
+      case 'medium':
+        return Icons.info;
+      default:
+        return Icons.info_outline;
     }
   }
 }

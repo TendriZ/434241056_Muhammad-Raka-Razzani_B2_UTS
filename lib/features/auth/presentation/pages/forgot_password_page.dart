@@ -58,7 +58,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
               children: [
                 Icon(
                   Icons.check_circle,
-                  color: AppTheme.tertiary,
+                  color: Theme.of(context).colorScheme.tertiary,
                   size: 28,
                 ),
                 const SizedBox(width: AppTheme.spacingSm),
@@ -68,7 +68,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
             content: Text(
               'Link reset password telah dikirim ke $email\n\nSilakan cek inbox Anda dan klik link untuk reset password.',
               style: AppTheme.bodyMedium.copyWith(
-                color: AppTheme.onSurfaceVariant,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
             actions: [
@@ -78,7 +78,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                   Navigator.of(context).pop(); // Back to login
                 },
                 style: TextButton.styleFrom(
-                  foregroundColor: AppTheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.primary,
                 ),
                 child: const Text('OK'),
               ),
@@ -103,7 +103,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
               children: [
                 Icon(
                   Icons.error,
-                  color: AppTheme.error,
+                  color: Theme.of(context).colorScheme.error,
                   size: 28,
                 ),
                 const SizedBox(width: AppTheme.spacingSm),
@@ -113,14 +113,14 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
             content: Text(
               'Gagal mengirim email reset password: ${e.toString()}',
               style: AppTheme.bodyMedium.copyWith(
-                color: AppTheme.onSurfaceVariant,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
                 style: TextButton.styleFrom(
-                  foregroundColor: AppTheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.primary,
                 ),
                 child: const Text('OK'),
               ),
@@ -134,17 +134,16 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        backgroundColor: AppTheme.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: AppTheme.elevationLevel1,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.onSurfaceVariant),
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurfaceVariant),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
           'Lupa Password',
-          style: AppTheme.titleLarge.copyWith(color: AppTheme.primary),
+          style: AppTheme.titleLarge.copyWith(color: Theme.of(context).colorScheme.primary),
         ),
       ),
       body: SafeArea(
@@ -162,13 +161,13 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryContainer.withValues(alpha: 0.1),
+                    color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(AppTheme.radiusXl),
                   ),
                   child: Icon(
                     Icons.lock_reset,
                     size: 40,
-                    color: AppTheme.primary,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
                 const SizedBox(height: AppTheme.spacingLg),
@@ -177,7 +176,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                 Text(
                   'Lupa Password?',
                   style: AppTheme.headlineSmall.copyWith(
-                    color: AppTheme.onSurface,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
@@ -188,7 +187,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                 Text(
                   'Masukkan username atau email Anda untuk menerima link reset password',
                   style: AppTheme.bodyMedium.copyWith(
-                    color: AppTheme.onSurfaceVariant,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -199,46 +198,46 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   style: AppTheme.bodyLarge.copyWith(
-                    color: AppTheme.onSurface,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.w500,
                   ),
                   decoration: InputDecoration(
                     labelText: 'Username atau Email',
                     hintText: 'Contoh: johndoe atau johndoe@helpdesk.com',
                     labelStyle: AppTheme.bodyMedium.copyWith(
-                      color: AppTheme.onSurfaceVariant,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                     prefixIcon: Icon(
                       Icons.email_outlined,
-                      color: AppTheme.primary.withValues(alpha: 0.7),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                     filled: true,
-                    fillColor: AppTheme.surfaceContainerLowest,
+                    fillColor: Theme.of(context).colorScheme.surfaceContainerLowest,
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                      borderSide: const BorderSide(
-                        color: AppTheme.outline,
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.outline,
                         width: 1.5,
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                      borderSide: const BorderSide(
-                        color: AppTheme.primary,
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.primary,
                         width: 2,
                       ),
                     ),
                     errorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                      borderSide: const BorderSide(
-                        color: AppTheme.error,
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.error,
                         width: 1.5,
                       ),
                     ),
                     focusedErrorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                      borderSide: const BorderSide(
-                        color: AppTheme.error,
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.error,
                         width: 2,
                       ),
                     ),
@@ -260,17 +259,17 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                 Container(
                   padding: const EdgeInsets.all(AppTheme.spacingMd),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryContainer.withValues(alpha: 0.1),
+                    color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     border: Border.all(
-                      color: AppTheme.primaryContainer.withValues(alpha: 0.3),
+                      color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Row(
                     children: [
                       Icon(
                         Icons.info_outline,
-                        color: AppTheme.primary,
+                        color: Theme.of(context).colorScheme.primary,
                         size: 20,
                       ),
                       const SizedBox(width: AppTheme.spacingSm),
@@ -278,7 +277,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                         child: Text(
                           'Jika Anda memasukkan username, sistem akan mengkonversi menjadi format username@helpdesk.com',
                           style: AppTheme.bodySmall.copyWith(
-                            color: AppTheme.onSurfaceVariant,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ),
@@ -293,19 +292,19 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _resetPassword,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryContainer,
-                      foregroundColor: AppTheme.onPrimary,
+                      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       elevation: AppTheme.elevationLevel1,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                       ),
                     ),
                     child: _isLoading
-                        ? const SizedBox(
-                            height: 24,
-                            width: 24,
-                            child: CircularProgressIndicator(
-                              color: AppTheme.onPrimary,
+                        ? SizedBox(
+                             height: 24,
+                             width: 24,
+                             child: CircularProgressIndicator(
+                              color: Theme.of(context).colorScheme.onPrimary,
                               strokeWidth: 2.5,
                             ),
                           )
@@ -323,7 +322,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
                   style: TextButton.styleFrom(
-                    foregroundColor: AppTheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.primary,
                   ),
                   child: Text(
                     'Kembali ke Login',

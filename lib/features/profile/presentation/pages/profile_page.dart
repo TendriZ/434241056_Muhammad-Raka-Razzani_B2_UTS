@@ -15,18 +15,17 @@ class ProfilePage extends ConsumerWidget {
     final profileAsync = ref.watch(userProfileProvider);
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        backgroundColor: AppTheme.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: AppTheme.elevationLevel1,
         automaticallyImplyLeading: false,
         title: Text(
           'Profil',
-          style: AppTheme.titleLarge.copyWith(color: AppTheme.primary),
+          style: AppTheme.titleLarge.copyWith(color: Theme.of(context).colorScheme.primary),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout, color: AppTheme.onSurfaceVariant),
+            icon: Icon(Icons.logout, color: Theme.of(context).colorScheme.onSurfaceVariant),
             onPressed: () async {
               await ref.read(authProvider.notifier).logout();
               if (context.mounted) {
@@ -45,12 +44,12 @@ class ProfilePage extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(AppTheme.spacingLg),
               decoration: BoxDecoration(
-                color: AppTheme.surface,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(AppTheme.radiusXl),
-                border: Border.all(color: AppTheme.outlineVariant),
+                border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
+                    color: Theme.of(context).colorScheme.shadow.withOpacity(0.03),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -65,23 +64,23 @@ class ProfilePage extends ConsumerWidget {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          AppTheme.primary,
-                          AppTheme.primaryContainer,
+                          Theme.of(context).colorScheme.primary,
+                          Theme.of(context).colorScheme.primaryContainer,
                         ],
                       ),
                       borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.primary.withValues(alpha: 0.3),
+                          color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.person,
                       size: 50,
-                      color: AppTheme.onPrimary,
+                      color: Theme.of(context).colorScheme.onPrimary,
                     ),
                   ),
                   const SizedBox(height: AppTheme.spacingMd),
@@ -90,14 +89,14 @@ class ProfilePage extends ConsumerWidget {
                   profileAsync.when(
                     loading: () => const CircularProgressIndicator(),
                     error: (err, _) => Text('Error: $err',
-                      style: AppTheme.bodyMedium.copyWith(color: AppTheme.error),
+                      style: AppTheme.bodyMedium.copyWith(color: Theme.of(context).colorScheme.error),
                     ),
                     data: (profile) => Column(
                       children: [
                         Text(
                           profile?['full_name'] ?? 'User Baru',
                           style: AppTheme.headlineSmall.copyWith(
-                            color: AppTheme.onSurface,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -107,7 +106,7 @@ class ProfilePage extends ConsumerWidget {
                               ? '@${profile!['username']}'
                               : '@username',
                           style: AppTheme.bodyMedium.copyWith(
-                            color: AppTheme.onSurfaceVariant,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -122,10 +121,10 @@ class ProfilePage extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(AppTheme.spacingLg),
               decoration: BoxDecoration(
-                color: AppTheme.primaryContainer.withValues(alpha: 0.1),
+                color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                 border: Border.all(
-                  color: AppTheme.primaryContainer.withValues(alpha: 0.3),
+                  color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
                 ),
               ),
               child: Row(
@@ -137,12 +136,12 @@ class ProfilePage extends ConsumerWidget {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryContainer,
+                          color: Theme.of(context).colorScheme.primaryContainer,
                           borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.confirmation_number,
-                          color: AppTheme.onPrimary,
+                          color: Theme.of(context).colorScheme.onPrimary,
                           size: 22,
                         ),
                       ),
@@ -150,7 +149,7 @@ class ProfilePage extends ConsumerWidget {
                       Text(
                         'Total Tiket Dibuat',
                         style: AppTheme.titleMedium.copyWith(
-                          color: AppTheme.onSurface,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                     ],
@@ -161,7 +160,7 @@ class ProfilePage extends ConsumerWidget {
                       vertical: AppTheme.spacingSm,
                     ),
                     decoration: BoxDecoration(
-                      color: AppTheme.primary,
+                      color: Theme.of(context).colorScheme.primary,
                       borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     ),
                     child: Text(
@@ -169,7 +168,7 @@ class ProfilePage extends ConsumerWidget {
                           ? '${profileAsync.value!['ticket_count']}'
                           : '0',
                       style: AppTheme.titleMedium.copyWith(
-                        color: AppTheme.onPrimary,
+                        color: Theme.of(context).colorScheme.onPrimary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -182,12 +181,12 @@ class ProfilePage extends ConsumerWidget {
             // Settings Section
             Container(
               decoration: BoxDecoration(
-                color: AppTheme.surface,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                border: Border.all(color: AppTheme.outlineVariant),
+                border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
+                    color: Theme.of(context).colorScheme.shadow.withOpacity(0.03),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -205,24 +204,24 @@ class ProfilePage extends ConsumerWidget {
                       height: 40,
                       decoration: BoxDecoration(
                         color: isDarkMode
-                            ? AppTheme.surfaceContainerHigh
-                            : AppTheme.surfaceContainerLow,
+                            ? Theme.of(context).colorScheme.surfaceContainerHigh
+                            : Theme.of(context).colorScheme.surfaceContainerLow,
                         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                       ),
                       child: Icon(
                         isDarkMode ? Icons.dark_mode : Icons.light_mode,
-                        color: AppTheme.primary,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                     title: Text(
                       'Dark Mode',
                       style: AppTheme.bodyLarge.copyWith(
-                        color: AppTheme.onSurface,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     trailing: Switch(
                       value: isDarkMode,
-                      activeColor: AppTheme.primary,
+                      activeColor: Theme.of(context).colorScheme.primary,
                       onChanged: (val) {
                         ref.read(themeModeProvider.notifier).toggleTheme();
                       },
@@ -230,7 +229,7 @@ class ProfilePage extends ConsumerWidget {
                   ),
                   Divider(
                     height: 1,
-                    color: AppTheme.outlineVariant,
+                    color: Theme.of(context).colorScheme.outlineVariant,
                   ),
                   ListTile(
                     contentPadding: const EdgeInsets.symmetric(
@@ -241,24 +240,24 @@ class ProfilePage extends ConsumerWidget {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: AppTheme.tertiaryContainer.withValues(alpha: 0.2),
+                        color: Theme.of(context).colorScheme.tertiaryContainer.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                       ),
                       child: Icon(
                         Icons.help_outline,
-                        color: AppTheme.tertiary,
+                        color: Theme.of(context).colorScheme.tertiary,
                       ),
                     ),
                     title: Text(
                       'Bantuan & Dukungan',
                       style: AppTheme.bodyLarge.copyWith(
-                        color: AppTheme.onSurface,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     trailing: Icon(
                       Icons.arrow_forward_ios,
                       size: 16,
-                      color: AppTheme.onSurfaceVariant,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                     onTap: () {
                       showDialog(
@@ -275,7 +274,7 @@ class ProfilePage extends ConsumerWidget {
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(),
                               style: TextButton.styleFrom(
-                                foregroundColor: AppTheme.primary,
+                                foregroundColor: Theme.of(context).colorScheme.primary,
                               ),
                               child: const Text('OK'),
                             ),
@@ -286,7 +285,7 @@ class ProfilePage extends ConsumerWidget {
                   ),
                   Divider(
                     height: 1,
-                    color: AppTheme.outlineVariant,
+                    color: Theme.of(context).colorScheme.outlineVariant,
                   ),
                   ListTile(
                     contentPadding: const EdgeInsets.symmetric(
@@ -297,24 +296,24 @@ class ProfilePage extends ConsumerWidget {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: AppTheme.secondaryContainer.withValues(alpha: 0.2),
+                        color: Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                       ),
                       child: Icon(
                         Icons.info_outline,
-                        color: AppTheme.secondary,
+                        color: Theme.of(context).colorScheme.secondary,
                       ),
                     ),
                     title: Text(
                       'Tentang Aplikasi',
                       style: AppTheme.bodyLarge.copyWith(
-                        color: AppTheme.onSurface,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     trailing: Icon(
                       Icons.arrow_forward_ios,
                       size: 16,
-                      color: AppTheme.onSurfaceVariant,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                     onTap: () {
                       showDialog(
@@ -331,7 +330,7 @@ class ProfilePage extends ConsumerWidget {
                               Text(
                                 'E-Ticketing Helpdesk',
                                 style: AppTheme.titleMedium.copyWith(
-                                  color: AppTheme.onSurface,
+                                  color: Theme.of(context).colorScheme.onSurface,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -339,14 +338,14 @@ class ProfilePage extends ConsumerWidget {
                               Text(
                                 'Versi 1.0.0',
                                 style: AppTheme.bodyMedium.copyWith(
-                                  color: AppTheme.onSurfaceVariant,
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 ),
                               ),
                               const SizedBox(height: 16),
                               Text(
                                 'Sistem manajemen tiket untuk layanan IT Support.',
                                 style: AppTheme.bodyMedium.copyWith(
-                                  color: AppTheme.onSurfaceVariant,
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             ],
@@ -355,7 +354,7 @@ class ProfilePage extends ConsumerWidget {
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(),
                               style: TextButton.styleFrom(
-                                foregroundColor: AppTheme.primary,
+                                foregroundColor: Theme.of(context).colorScheme.primary,
                               ),
                               child: const Text('OK'),
                             ),
@@ -380,14 +379,14 @@ class ProfilePage extends ConsumerWidget {
                   }
                 },
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AppTheme.error,
+                  foregroundColor: Theme.of(context).colorScheme.error,
                   padding: const EdgeInsets.symmetric(
                     vertical: AppTheme.spacingMd,
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                   ),
-                  side: const BorderSide(color: AppTheme.error),
+                  side: BorderSide(color: Theme.of(context).colorScheme.error),
                 ),
                 icon: const Icon(Icons.logout),
                 label: Text(
