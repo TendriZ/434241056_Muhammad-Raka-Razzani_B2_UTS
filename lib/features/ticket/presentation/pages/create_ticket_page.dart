@@ -181,7 +181,14 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
           }).eq('id', ticketId);
 
         } catch (uploadError) {
-          debugPrint('Upload attachment gagal: $uploadError');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Tiket berhasil dibuat, tetapi upload gambar gagal: $uploadError'),
+                backgroundColor: Theme.of(context).colorScheme.errorContainer,
+              ),
+            );
+          }
         }
       }
 

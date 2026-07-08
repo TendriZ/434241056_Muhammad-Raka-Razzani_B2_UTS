@@ -199,7 +199,6 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
         'user_id': userId,
         'action': 'Update Status',
         'message': 'Status otomatis diubah dari $oldStatus menjadi on_progress (karena ditugaskan)',
-        'status': 'on_progress',
       });
 
       // Invalidate providers to refresh UI
@@ -250,7 +249,6 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
         'user_id': userId,
         'action': 'Update Status',
         'message': 'Tiket selesai dikerjakan oleh helpdesk',
-        'status': 'resolved',
       });
 
       // Invalidate providers to refresh UI
@@ -277,142 +275,108 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
     }
   }
 
-  // Show assign bottom sheet (for admin only - FR-007)
   void _showAssignBottomSheet(BuildContext context, String ticketId) {
+    String? selectedHelpdeskId;
+    String? selectedHelpdeskName;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) {
-        String? selectedHelpdeskId;
-        String? selectedHelpdeskName;
-
-        return Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusLg)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Handle
-              Container(
-                margin: EdgeInsets.only(top: AppTheme.spacingSm),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHigh,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setInnerState) {
+            return Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusLg)),
               ),
-              // Header
-              Padding(
-                padding: EdgeInsets.all(AppTheme.spacingLg),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Tugaskan ke Helpdesk',
-                      style: AppTheme.titleLarge.copyWith(color: Theme.of(context).colorScheme.onSurface),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    margin: EdgeInsets.only(top: AppTheme.spacingSm),
+                    width: 40, height: 4,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                      borderRadius: BorderRadius.circular(2),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(context),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(AppTheme.spacingLg),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Tugaskan ke Helpdesk', style: AppTheme.titleLarge.copyWith(color: Theme.of(context).colorScheme.onSurface)),
+                        IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(sheetContext)),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              // Helpdesk list
-              Consumer(
-                builder: (context, ref, child) {
-                  final helpdeskAsync = ref.watch(helpdeskUsersProvider);
-                  return helpdeskAsync.when(
-                    loading: () => const Padding(
-                      padding: EdgeInsets.all(AppTheme.spacingXl),
-                      child: CircularProgressIndicator(),
-                    ),
-                    error: (e, _) => Padding(
-                      padding: EdgeInsets.all(AppTheme.spacingLg),
-                      child: Text('Gagal memuat helpdesk: $e'),
-                    ),
-                    data: (helpdesks) {
-                      if (helpdesks.isEmpty) {
-                        return Padding(
+                  ),
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final helpdeskAsync = ref.watch(helpdeskUsersProvider);
+                      return helpdeskAsync.when(
+                        loading: () => const Padding(padding: EdgeInsets.all(AppTheme.spacingXl), child: CircularProgressIndicator()),
+                        error: (e, _) => Padding(
                           padding: EdgeInsets.all(AppTheme.spacingLg),
-                          child: Text(
-                            'Tidak ada helpdesk tersedia',
-                            style: AppTheme.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
-                          ),
-                        );
-                      }
-
-                      return ListView.separated(
-                        shrinkWrap: true,
-                        itemCount: helpdesks.length,
-                        separatorBuilder: (context, index) => Divider(
-                          color: Theme.of(context).colorScheme.outlineVariant,
-                          height: 1,
+                          child: Text('Gagal memuat helpdesk: $e'),
                         ),
-                        itemBuilder: (context, index) {
-                          final helpdesk = helpdesks[index];
-                          final id = helpdesk['id']?.toString() ?? '';
-                          final name = helpdesk['name']?.toString() ?? 'No Name';
-                          final username = helpdesk['username']?.toString() ?? '';
-
-                          return RadioListTile<String>(
-                            title: Text(
-                              name,
-                              style: AppTheme.bodyLarge.copyWith(color: Theme.of(context).colorScheme.onSurface),
-                            ),
-                            subtitle: Text(
-                              '@$username',
-                              style: AppTheme.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
-                            ),
-                            value: id,
-                            groupValue: selectedHelpdeskId,
-                            onChanged: (value) {
-                              selectedHelpdeskId = value;
-                              selectedHelpdeskName = name;
+                        data: (helpdesks) {
+                          if (helpdesks.isEmpty) {
+                            return Padding(
+                              padding: EdgeInsets.all(AppTheme.spacingLg),
+                              child: Text('Tidak ada helpdesk tersedia', style: AppTheme.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                            );
+                          }
+                          return ListView.separated(
+                            shrinkWrap: true,
+                            itemCount: helpdesks.length,
+                            separatorBuilder: (context, index) => Divider(color: Theme.of(context).colorScheme.outlineVariant, height: 1),
+                            itemBuilder: (context, index) {
+                              final helpdesk = helpdesks[index];
+                              final id = helpdesk['id']?.toString() ?? '';
+                              final name = helpdesk['name']?.toString() ?? 'No Name';
+                              final username = helpdesk['username']?.toString() ?? '';
+                              return RadioListTile<String>(
+                                title: Text(name, style: AppTheme.bodyLarge.copyWith(color: Theme.of(context).colorScheme.onSurface)),
+                                subtitle: Text('@$username', style: AppTheme.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                                value: id,
+                                groupValue: selectedHelpdeskId,
+                                onChanged: (value) {
+                                  setInnerState(() {
+                                    selectedHelpdeskId = value;
+                                    selectedHelpdeskName = name;
+                                  });
+                                },
+                                activeColor: Theme.of(context).colorScheme.primary,
+                              );
                             },
-                            activeColor: Theme.of(context).colorScheme.primary,
                           );
                         },
                       );
                     },
-                  );
-                },
-              ),
-              // Assign button
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(AppTheme.spacingLg),
-                child: ElevatedButton(
-                  onPressed: _isAssigning
-                      ? null
-                      : () => _assignTicket(ticketId, selectedHelpdeskId, selectedHelpdeskName),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    padding: EdgeInsets.symmetric(vertical: AppTheme.spacingMd),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                  ),
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.all(AppTheme.spacingLg),
+                    child: ElevatedButton(
+                      onPressed: _isAssigning ? null : () => _assignTicket(ticketId, selectedHelpdeskId, selectedHelpdeskName),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                        padding: EdgeInsets.symmetric(vertical: AppTheme.spacingMd),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMd)),
+                      ),
+                      child: _isAssigning
+                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
+                          : const Text('Tugaskan', style: AppTheme.labelLarge),
                     ),
                   ),
-                  child: _isAssigning
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : const Text('Tugaskan', style: AppTheme.labelLarge),
-                ),
+                  SizedBox(height: MediaQuery.of(context).padding.bottom),
+                ],
               ),
-              SizedBox(height: MediaQuery.of(context).padding.bottom),
-            ],
-          ),
+            );
+          },
         );
       },
     );
@@ -561,6 +525,9 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
               ),
             );
           }
+
+          final supabase = ref.read(supabaseClientProvider);
+          final accessToken = supabase.auth.currentSession?.accessToken ?? '';
 
           final role = profileAsync.value?['role'] ?? 'user';
           final priority = ticket['priority']?.toString() ?? 'normal';
@@ -769,6 +736,10 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                                         child: Image.network(
                                           ticket['image_url'],
                                           fit: BoxFit.cover,
+                                          headers: {
+                                            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2bXpvY3p6ZHFwaXVjcGVkZ2hwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNTgyOTEsImV4cCI6MjA5MTYzNDI5MX0.NVC_if2gR7IiV2E2Z2e222vm7U5dHdGylQl7zGIukUc',
+                                            'Authorization': 'Bearer $accessToken',
+                                          },
                                           errorBuilder: (context, error, stackTrace) {
                                             return Container(
                                               color: Theme.of(context).colorScheme.surfaceContainerLow,
