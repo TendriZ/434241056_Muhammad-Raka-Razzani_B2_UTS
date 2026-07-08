@@ -226,20 +226,108 @@ class NotificationNotifier extends Notifier<NotificationState> {
       final userId = supabase.auth.currentUser?.id;
       if (userId == null) return;
 
-      // Load history tiket terakhir untuk menampilkan notifikasi awal
-      final response = await supabase
-          .from('tickets')
-          .select('id, title, status, updated_at')
-          .eq('user_id', userId)
-          .order('updated_at', ascending: false)
-          .limit(10);
+      final profile = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', userId)
+          .maybeSingle();
 
-      if (response != null && response is List) {
-        // For now we start with empty list
-        state = NotificationState(notifications: []);
+      final isUser = profile?['role'] == 'user' || profile?['role'] == null;
+      final historyList = <AppNotification>[];
+
+      // Ambil tiket terakhir
+      List<dynamic> tickets;
+      if (isUser) {
+        tickets = await supabase
+            .from('tickets')
+            .select('id, title, status, created_at, updated_at')
+            .eq('user_id', userId)
+            .order('created_at', ascending: false)
+            .limit(20);
+      } else {
+        tickets = await supabase
+            .from('tickets')
+            .select('id, title, status, created_at, updated_at')
+            .order('created_at', ascending: false)
+            .limit(20);
       }
+
+      for (final t in tickets) {
+        final ticketId = t['id'].toString();
+        final title = t['title'] ?? '';
+
+        historyList.add(AppNotification(
+          id: 'ticket-$ticketId-created',
+          title: 'Tiket Baru Dibuat',
+          message: 'Tiket "$title" berhasil dibuat.',
+          ticketId: ticketId,
+          createdAt: DateTime.tryParse(t['created_at'] ?? '') ?? DateTime.now(),
+          isRead: true,
+        ));
+
+        if (t['status'] == 'on_progress') {
+          historyList.add(AppNotification(
+            id: 'ticket-$ticketId-progress',
+            title: 'Status Tiket Diperbarui',
+            message: 'Tiket "$title" sekarang statusnya: Diproses',
+            ticketId: ticketId,
+            createdAt: DateTime.tryParse(t['updated_at'] ?? '') ?? DateTime.now(),
+            isRead: true,
+          ));
+        } else if (t['status'] == 'resolved') {
+          historyList.add(AppNotification(
+            id: 'ticket-$ticketId-resolved',
+            title: 'Tiket Selesai',
+            message: 'Tiket "$title" telah selesai diproses.',
+            ticketId: ticketId,
+            createdAt: DateTime.tryParse(t['updated_at'] ?? '') ?? DateTime.now(),
+            isRead: true,
+          ));
+        }
+      }
+
+      // Ambil history komentar/action (untuk ticket_history)
+      List<dynamic> historyRows;
+      if (isUser) {
+        final userTicketIds = tickets.map((t) => t['id']).toList();
+        if (userTicketIds.isEmpty) {
+          state = NotificationState(notifications: historyList);
+          return;
+        }
+        historyRows = await supabase
+            .from('ticket_history')
+            .select('id, ticket_id, action, message, created_at, tickets!inner(title)')
+            .inFilter('ticket_id', userTicketIds)
+            .order('created_at', ascending: false)
+            .limit(20);
+      } else {
+        historyRows = await supabase
+            .from('ticket_history')
+            .select('id, ticket_id, action, message, created_at, tickets!inner(title)')
+            .order('created_at', ascending: false)
+            .limit(20);
+      }
+
+      for (final h in historyRows) {
+        final action = h['action'] ?? '';
+        final ticketId = h['ticket_id']?.toString() ?? '';
+
+        historyList.add(AppNotification(
+          id: 'history-${h['id']}',
+          title: action == 'Comment' ? 'Komentar Baru' : 'Update Tiket',
+          message: h['message']?.toString() ?? '',
+          ticketId: ticketId,
+          createdAt: DateTime.tryParse(h['created_at'] ?? '') ?? DateTime.now(),
+          isRead: true,
+        ));
+      }
+
+      // Urutkan berdasarkan created_at descending
+      historyList.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      state = NotificationState(notifications: historyList);
     } catch (e) {
       if (kDebugMode) print('Error loading notification history: $e');
+      state = NotificationState(notifications: []);
     }
   }
 
