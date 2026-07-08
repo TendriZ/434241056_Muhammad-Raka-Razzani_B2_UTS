@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
@@ -24,7 +25,6 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
   final List<({String name, List<int> bytes})> _attachments = [];
   final ImagePicker _imagePicker = ImagePicker();
 
-  // Categories from Stitch design
   final List<Map<String, dynamic>> _categories = [
     {'value': 'technical', 'label': 'Technical'},
     {'value': 'hardware', 'label': 'Hardware'},
@@ -33,7 +33,6 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
     {'value': 'other', 'label': 'Other'},
   ];
 
-  // Priorities from Stitch design
   final List<Map<String, dynamic>> _priorities = [
     {'value': 'normal', 'label': 'Normal'},
     {'value': 'medium', 'label': 'Medium'},
@@ -149,48 +148,57 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
+
     try {
       final supabase = ref.read(supabaseClientProvider);
       final userId = supabase.auth.currentUser!.id;
 
-      final ticketResponse = await supabase.from('tickets').insert({
-        'user_id': userId,
-        'title': _titleController.text.trim(),
-        'description': _descController.text.trim(),
-        'status': 'pending',
-        'category': _selectedCategory,
-        'priority': _selectedPriority,
-      }).select().single();
-
-      final ticketId = ticketResponse['id'].toString();
-
+      // ─── STEP 1: Upload attachment DULU sebelum insert tiket ────────────────
+      // Dengan begini, image_url langsung bisa disertakan di INSERT.
+      // Cara lama (INSERT dulu → UPDATE) rawan silent-fail karena RLS atau
+      // tipe data ticketId (String vs bigint).
+      String? imageUrl;
       if (_attachments.isNotEmpty) {
         try {
           final attachment = _attachments.first;
           final timestamp = DateTime.now().millisecondsSinceEpoch;
-          final filePath = 'tickets/$ticketId/$timestamp-${attachment.name}';
+          // Gunakan userId di path karena ticketId belum ada saat ini
+          final filePath = 'tickets/$userId/$timestamp-${attachment.name}';
 
           await supabase.storage
               .from('ticket-attachments')
-              .uploadBinary(filePath, attachment.bytes as dynamic);
+              .uploadBinary(
+                filePath,
+                Uint8List.fromList(attachment.bytes),
+              );
 
-          final imageUrl = supabase.storage.from('ticket-attachments').getPublicUrl(filePath);
-
-          await supabase.from('tickets').update({
-            'image_url': imageUrl,
-          }).eq('id', ticketId);
-
+          imageUrl = supabase.storage
+              .from('ticket-attachments')
+              .getPublicUrl(filePath);
         } catch (uploadError) {
+          // Upload gagal → tiket tetap dibuat, tapi tanpa gambar
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Tiket berhasil dibuat, tetapi upload gambar gagal: $uploadError'),
+                content: Text('Upload gambar gagal: $uploadError\nTiket akan dibuat tanpa lampiran.'),
                 backgroundColor: Theme.of(context).colorScheme.errorContainer,
               ),
             );
           }
         }
       }
+
+      // ─── STEP 2: INSERT tiket dengan image_url langsung (tidak perlu UPDATE) ─
+      await supabase.from('tickets').insert({
+        'user_id': userId,
+        'title': _titleController.text.trim(),
+        'description': _descController.text.trim(),
+        'status': 'pending',
+        'category': _selectedCategory,
+        'priority': _selectedPriority,
+        // Hanya masukkan image_url jika upload berhasil
+        if (imageUrl != null) 'image_url': imageUrl,
+      });
 
       ref.invalidate(ticketsProvider);
       ref.invalidate(ticketStatsProvider);
@@ -250,7 +258,7 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Section
+              // ── Header ──────────────────────────────────────────────────────
               Text(
                 'Buat Tiket Baru',
                 style: AppTheme.headlineSmall.copyWith(color: Theme.of(context).colorScheme.onSurface),
@@ -262,7 +270,7 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
               ),
               const SizedBox(height: AppTheme.spacingLg),
 
-              // Form Card
+              // ── Form Card ───────────────────────────────────────────────────
               Container(
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
@@ -279,7 +287,7 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Title Input
+                    // Title
                     Text(
                       'Judul Tiket',
                       style: AppTheme.labelLarge.copyWith(color: Theme.of(context).colorScheme.onSurface),
@@ -318,7 +326,7 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                     ),
                     const SizedBox(height: AppTheme.spacingLg),
 
-                    // Description Input
+                    // Description
                     Text(
                       'Deskripsi Masalah',
                       style: AppTheme.labelLarge.copyWith(color: Theme.of(context).colorScheme.onSurface),
@@ -456,14 +464,13 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
               ),
               const SizedBox(height: AppTheme.spacingLg),
 
-              // File Upload Section
+              // ── Lampiran ────────────────────────────────────────────────────
               Text(
                 'Lampiran (Opsional)',
                 style: AppTheme.labelLarge.copyWith(color: Theme.of(context).colorScheme.onSurface),
               ),
               const SizedBox(height: AppTheme.spacingSm),
 
-              // Upload Area or File List
               _attachments.isEmpty
                   ? GestureDetector(
                       onTap: _pickFiles,
@@ -539,13 +546,17 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                                 ),
                                 title: Text(
                                   file.name,
-                                  style: AppTheme.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurface),
+                                  style: AppTheme.bodyMedium.copyWith(
+                                    color: Theme.of(context).colorScheme.onSurface,
+                                  ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 subtitle: Text(
                                   '${(file.bytes.length / 1024).toStringAsFixed(1)} KB',
-                                  style: AppTheme.labelMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                                  style: AppTheme.labelMedium.copyWith(
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                  ),
                                 ),
                                 trailing: IconButton(
                                   icon: const Icon(Icons.close),
@@ -580,7 +591,7 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                     ),
               const SizedBox(height: AppTheme.spacingLg),
 
-              // Submit Button
+              // ── Submit Button ────────────────────────────────────────────────
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

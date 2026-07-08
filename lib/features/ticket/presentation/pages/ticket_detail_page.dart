@@ -526,9 +526,6 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
             );
           }
 
-          final supabase = ref.read(supabaseClientProvider);
-          final accessToken = supabase.auth.currentSession?.accessToken ?? '';
-
           final role = profileAsync.value?['role'] ?? 'user';
           final priority = ticket['priority']?.toString() ?? 'normal';
           final category = ticket['category']?.toString() ?? '-';
@@ -718,40 +715,18 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                                 ],
                               ),
                               const SizedBox(height: AppTheme.spacingSm),
-                              SizedBox(
-                                height: 120,
-                                child: ListView.builder(
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount: 1,
-                                  itemBuilder: (context, index) {
-                                    return Container(
-                                      width: 100,
-                                      margin: const EdgeInsets.only(right: AppTheme.spacingSm),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                                        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-                                      ),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                                        child: Image.network(
-                                          ticket['image_url'],
-                                          fit: BoxFit.cover,
-                                          headers: {
-                                            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2bXpvY3p6ZHFwaXVjcGVkZ2hwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNTgyOTEsImV4cCI6MjA5MTYzNDI5MX0.NVC_if2gR7IiV2E2Z2e222vm7U5dHdGylQl7zGIukUc',
-                                            'Authorization': 'Bearer $accessToken',
-                                          },
-                                          errorBuilder: (context, error, stackTrace) {
-                                            return Container(
-                                              color: Theme.of(context).colorScheme.surfaceContainerLow,
-                                              child: const Center(
-                                                child: Icon(Icons.broken_image),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    );
-                                  },
+                              // ✅ BARU - ganti dengan ini
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                                child: Container(
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                                    border: Border.all(
+                                      color: Theme.of(context).colorScheme.outlineVariant,
+                                    ),
+                                  ),
+                                  child: _TicketImage(url: ticket['image_url']),
                                 ),
                               ),
                             ],
@@ -965,6 +940,34 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
   }
 }
 
+class _TicketImage extends ConsumerWidget {
+  final String? url;
+  const _TicketImage({this.url});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (url == null || url!.isEmpty) {
+      return Container(
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        child: const Center(child: Icon(Icons.image_not_supported)),
+      );
+    }
+    // ✅ BARU
+    return Image.network(
+      url!,
+      fit: BoxFit.fitWidth,  // ← full lebar, tinggi menyesuaikan rasio asli
+      width: double.infinity,
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          color: Theme.of(context).colorScheme.surfaceContainerLow,
+          height: 200,
+          child: const Center(child: Icon(Icons.broken_image)),
+        );
+      },
+    );
+  }
+}
+
 class _TicketTimelineWidget extends ConsumerWidget {
   final String ticketId;
 
@@ -1079,8 +1082,11 @@ class _TicketTimelineWidget extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              // ✅ BARU
               Text(
-                _safeUserIdSubstring(log['user_id']?.toString()) ?? 'User',
+                log['profiles']?['username']?.toString()
+                    ?? log['profiles']?['name']?.toString()
+                    ?? _safeUserIdSubstring(log['user_id']?.toString()),
                 style: AppTheme.labelLarge.copyWith(
                   color: Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.w500,
@@ -1165,7 +1171,7 @@ class _TicketTimelineWidget extends ConsumerWidget {
           ),
         Text(' '),
         Text(
-          _formatDateTime(log['created_at']),
+_formatDateTime(log['created_at']),
           style: AppTheme.labelSmall.copyWith(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),

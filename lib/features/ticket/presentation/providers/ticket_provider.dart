@@ -93,7 +93,7 @@ final ticketHistoryProvider = FutureProvider.family<List<Map<String, dynamic>>, 
   final supabase = ref.watch(supabaseClientProvider);
   final response = await supabase
       .from('ticket_history')
-      .select()
+      .select('*, profiles(username, name)')
       .eq('ticket_id', ticketId)
       .order('created_at', ascending: false);
   return List<Map<String, dynamic>>.from(response);
