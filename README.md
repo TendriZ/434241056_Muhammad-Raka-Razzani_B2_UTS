@@ -1,212 +1,97 @@
-# E-Ticketing Helpdesk - Mobile Application
+# E-Ticketing Helpdesk — Mobile Application
 
-Aplikasi mobile Flutter untuk mengelola tiket support/helpdesk dengan fitur role-based access control dan real-time updates.
+Aplikasi mobile Flutter untuk mengelola tiket support/helpdesk dengan role-based access control (User, Helpdesk, Admin) dan realtime updates via Supabase.
 
-## 🎯 Fitur Utama
+## Fitur Utama
 
-### FR-001: Sistem Autentikasi
-- ✅ Login/Signup dengan email dan password
-- ✅ Forgot password functionality
-- ✅ Session management
-- ✅ Role-based access control (User, Helpdesk, Admin)
+| Kode | Fitur | Status |
+|------|-------|--------|
+| FR-001 | Autentikasi (Login, Register, Forgot Password) | ✅ |
+| FR-004 | Reset Password | ✅ |
+| FR-005 | Membuat Tiket + File Attachment | ✅ |
+| FR-006 | Daftar Tiket (role-based filter) | ✅ |
+| FR-006.3 | Update Status Tiket | ✅ |
+| FR-006.4 | Assign Tiket ke Helpdesk | ✅ |
+| FR-007 | Tambah Komentar | ✅ |
+| FR-008 | Notifikasi Realtime (Supabase Realtime) | ✅ |
+| FR-009 | Statistik Tiket | ✅ |
+| FR-010 | Riwayat Tiket | ✅ |
+| FR-011 | Tracking Tiket | ✅ |
 
-### FR-005: Membuat Tiket
-- ✅ Form untuk membuat tiket baru
-- ✅ Validasi input
-- ✅ Support file attachment
-- ✅ Auto-save to database
+## Tech Stack
 
-### FR-006: Menampilkan Daftar Tiket
-- ✅ View tiket berdasarkan role
-- ✅ Filter by status (pending, on_progress, resolved)
-- ✅ Search dan sorting
-- ✅ Pagination support
-- ✅ Refresh functionality
+| Komponen | Teknologi |
+|----------|-----------|
+| **Framework** | Flutter 3.0+ |
+| **Language** | Dart 3.0+ |
+| **State Management** | Riverpod 3.x |
+| **Routing** | GoRouter |
+| **Backend** | Supabase (Auth, PostgreSQL, Storage, Realtime) |
+| **Architecture** | Layered Architecture + Riverpod |
 
-### FR-006.3 & FR-006.4: Update Status & Assign
-- ✅ Update status tiket (pending → on_progress → resolved)
-- ✅ Assign tiket ke helpdesk staff
-- ✅ Validation before update
-- ✅ History logging
-
-### FR-007: Tambah Komentar
-- ✅ Add comments ke tiket
-- ✅ View komentar history
-- ✅ Real-time update (future)
-
-### FR-010: Riwayat Tiket
-- ✅ View complete ticket history
-- ✅ Audit trail for all changes
-- ✅ Status tracking
-- ✅ Comment threads
-
-### FR-011: Dashboard & Statistics
-- ✅ Dashboard overview
-- ✅ Ticket statistics
-- ✅ Status distribution chart
-- ✅ Quick actions
-
-### FR-005.2: File Attachment
-- ✅ Upload files ke tiket
-- ✅ Secure file storage (Supabase)
-- ✅ File preview
-- ✅ Download support (future)
-
-## 🏗️ Tech Stack
-
-### Frontend
-- **Flutter** 3.0+ - UI Framework
-- **Dart** 3.0+ - Programming Language
-- **Flutter BLoC** - State Management
-- **Equatable** - Value Equality
-
-### Backend
-- **Supabase** - Backend as a Service
-- **PostgreSQL** - Database
-- **Supabase Auth** - Authentication
-- **Supabase Storage** - File Storage
-
-### Architecture
-- **Clean Architecture** - Separation of concerns
-- **SOLID Principles** - Maintainable code
-- **Repository Pattern** - Data abstraction
-- **Use Case Pattern** - Business logic
-
-## 📁 Project Structure
+## Project Structure
 
 ```
-lib/features/ticket/
-├── data/
-│   ├── datasources/
-│   │   └── ticket_remote_datasource.dart
-│   ├── models/
-│   │   └── ticket_model.dart
-│   └── repositories/
-│       └── ticket_repository_impl.dart
-├── domain/
-│   ├── entities/
-│   │   └── ticket_entity.dart
-│   ├── repositories/
-│   │   └── ticket_repository.dart
-│   └── usecases/
-│       └── ticket_usecases.dart
-├── presentation/
-│   ├── bloc/
-│   │   └── ticket_bloc.dart
-│   ├── screens/
-│   │   ├── dashboard_screen.dart
-│   │   ├── ticket_list_screen.dart
-│   │   ├── create_ticket_screen.dart
-│   │   └── ticket_detail_screen.dart
-│   └── widgets/
-├── routes/
-│   └── ticket_routes.dart
-└── injection_container.dart
+lib/
+├── core/
+│   ├── theme/              # Design System (Material 3, Light/Dark)
+│   └── services/           # Supabase client, GoRouter
+├── features/
+│   ├── auth/               # Login, Register, Forgot Password
+│   ├── home/               # Role-based Home pages
+│   ├── ticket/             # CRUD Tiket (Create, List, Detail, History)
+│   ├── dashboard/          # Statistik tiket
+│   ├── notification/       # Notifikasi realtime
+│   ├── profile/            # Manajemen profil
+│   └── admin/              # Manajemen user (Admin only)
+└── main.dart
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
-### Prerequisites
-- Flutter 3.0+
-- Dart 3.0+
-- Supabase account
-- Git
-
-### Installation
-
-1. **Clone Repository**
 ```bash
-git clone <repository-url>
-cd e_ticketing_helpdesk
-```
-
-2. **Install Dependencies**
-```bash
+# Clone & install
 flutter pub get
-```
 
-3. **Setup Supabase**
-   - Create project at https://supabase.com
-   - Copy project URL dan anon key
-   - Update `lib/config/supabase_config.dart`
-
-4. **Create Database**
-   - Run SQL migrations from `DATABASE_SCHEMA.md`
-   - Enable RLS policies
-   - Create storage bucket
-
-5. **Run Application**
-```bash
+# Jalankan
 flutter run
+
+# Build APK release
+flutter build apk --release
 ```
 
-## 📚 Documentation
+## Database Schema
 
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Clean Architecture explanation
-- **[IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md)** - Step-by-step implementation
-- **[DATABASE_SCHEMA.md](DATABASE_SCHEMA.md)** - Database design dan RLS policies
-- **[API_GUIDE.md](API_GUIDE.md)** - REST API endpoints
+3 tabel utama di Supabase PostgreSQL:
 
-## 🔐 Authentication & Authorization
+| Tabel | Keterangan |
+|-------|------------|
+| `profiles` | Data user (id, name, username, role) |
+| `tickets` | Tiket helpdesk (title, description, status, priority, category) |
+| `ticket_history` | Riwayat perubahan dan komentar tiket |
 
-### Roles & Permissions
+Lihat detail di [`schema.md`](schema.md) dan [`LAPORAN_UAS.md`](LAPORAN_UAS.md).
+
+## Role & Permissions
 
 | Feature | User | Helpdesk | Admin |
 |---------|------|----------|-------|
-| Create Ticket | ✅ | ✅ | ✅ |
-| View Own Tickets | ✅ | - | - |
-| View All Tickets | - | ✅ | ✅ |
-| Update Status | - | ✅ | ✅ |
-| Assign Ticket | - | ✅ | ✅ |
-| View Statistics | ✅ | ✅ | ✅ |
-| Delete Ticket | - | - | ✅ |
+| Create Ticket | ✅ Own | ✅ Any | ✅ Any |
+| View Tickets | ✅ Own | ✅ All | ✅ All |
+| Assign | ❌ | ❌ | ✅ To Staff |
+| Finish | ❌ | ✅ Own Task | ✅ Any |
+| Comment | ✅ Own | ✅ All | ✅ All |
+| History | ✅ Own | ✅ All | ✅ All |
+| Statistics | ✅ Own | ✅ Assigned | ✅ All |
+| Manage Users | ❌ | ❌ | ✅ |
+| Delete Ticket | ❌ | ❌ | ✅ |
 
-## 📊 States Management
+## Dokumentasi Lainnya
 
-Using **Flutter BLoC** for state management with proper separation of concerns.
+- [LAPORAN_UAS.md](LAPORAN_UAS.md) — Laporan lengkap (UI/UX, Database, API)
+- [schema.md](schema.md) — Database schema
+- [scripts/api_curl_test.md](scripts/api_curl_test.md) — cURL API test scripts
 
-## 🧪 Testing
+## License
 
-```bash
-# Unit tests
-flutter test test/features/ticket/domain/
-
-# Widget tests
-flutter test test/features/ticket/presentation/
-
-# Integration tests
-flutter test integration_test/
-```
-
-## 🚀 Build & Deployment
-
-```bash
-# Android APK
-flutter build apk --release
-
-# iOS
-flutter build ios --release
-
-# Web
-flutter build web --release
-```
-
-## 🔒 Security
-
-- ✅ Secure authentication dengan Supabase Auth
-- ✅ Row Level Security (RLS) di database
-- ✅ Input validation
-- ✅ HTTPS for all API calls
-
-## 📞 Support
-
-For support, open an issue in the repository.
-
----
-
-**Version**: 1.0.0
-**Last Updated**: January 2024
-=======
-# 434241056_Muhammad-Raka-Razzani_B2_UTS
-E-Ticketing Helpdesk Mobile-App Based
->>>>>>> f642e07e022a01f48a0ac95e93becf3b9fb5df60
+Project ini dibuat untuk UAS Mata Kuliah Aplikasi Mobile Praktikum — Universitas Airlangga.
