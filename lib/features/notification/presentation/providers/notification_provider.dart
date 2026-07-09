@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/services/supabase_service.dart';
 
 // Model untuk notifikasi
@@ -55,6 +56,8 @@ class NotificationNotifier extends Notifier<NotificationState> {
   RealtimeChannel? _channel;
   RealtimeChannel? _historyChannel;
   StreamSubscription? _authSubscription;
+  Set<String> _readNotificationIds = {};
+  SharedPreferences? _prefs;
 
   @override
   NotificationState build() {
@@ -62,7 +65,10 @@ class NotificationNotifier extends Notifier<NotificationState> {
     return NotificationState(notifications: []);
   }
 
-  void _initialize() {
+  Future<void> _initialize() async {
+    _prefs = await SharedPreferences.getInstance();
+    _readNotificationIds = (_prefs?.getStringList('read_notifications') ?? []).toSet();
+
     final supabase = ref.read(supabaseClientProvider);
     _supabase = supabase;
 
@@ -205,12 +211,14 @@ class NotificationNotifier extends Notifier<NotificationState> {
   }
 
   void _addNotification({required String title, required String message, String? ticketId}) {
+    final id = DateTime.now().millisecondsSinceEpoch.toString();
     final notification = AppNotification(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: id,
       title: title,
       message: message,
       ticketId: ticketId,
       createdAt: DateTime.now(),
+      isRead: _readNotificationIds.contains(id),
     );
 
     state = NotificationState(
@@ -262,7 +270,7 @@ class NotificationNotifier extends Notifier<NotificationState> {
           message: 'Tiket "$title" berhasil dibuat.',
           ticketId: ticketId,
           createdAt: DateTime.tryParse(t['created_at'] ?? '') ?? DateTime.now(),
-          isRead: true,
+          isRead: _readNotificationIds.contains('ticket-$ticketId-created'),
         ));
 
         if (t['status'] == 'on_progress') {
@@ -272,7 +280,7 @@ class NotificationNotifier extends Notifier<NotificationState> {
             message: 'Tiket "$title" sekarang statusnya: Diproses',
             ticketId: ticketId,
             createdAt: DateTime.tryParse(t['updated_at'] ?? '') ?? DateTime.now(),
-            isRead: true,
+            isRead: _readNotificationIds.contains('ticket-$ticketId-progress'),
           ));
         } else if (t['status'] == 'resolved') {
           historyList.add(AppNotification(
@@ -281,7 +289,7 @@ class NotificationNotifier extends Notifier<NotificationState> {
             message: 'Tiket "$title" telah selesai diproses.',
             ticketId: ticketId,
             createdAt: DateTime.tryParse(t['updated_at'] ?? '') ?? DateTime.now(),
-            isRead: true,
+            isRead: _readNotificationIds.contains('ticket-$ticketId-resolved'),
           ));
         }
       }
@@ -318,7 +326,7 @@ class NotificationNotifier extends Notifier<NotificationState> {
           message: h['message']?.toString() ?? '',
           ticketId: ticketId,
           createdAt: DateTime.tryParse(h['created_at'] ?? '') ?? DateTime.now(),
-          isRead: true,
+          isRead: _readNotificationIds.contains('history-${h['id']}'),
         ));
       }
 
@@ -332,6 +340,9 @@ class NotificationNotifier extends Notifier<NotificationState> {
   }
 
   void markAsRead(String notificationId) {
+    _readNotificationIds.add(notificationId);
+    _prefs?.setStringList('read_notifications', _readNotificationIds.toList());
+
     final updated = state.notifications.map((n) {
       if (n.id == notificationId) {
         return n.copyWith(isRead: true);
@@ -343,11 +354,18 @@ class NotificationNotifier extends Notifier<NotificationState> {
   }
 
   void markAllAsRead() {
+    for (var n in state.notifications) {
+      _readNotificationIds.add(n.id);
+    }
+    _prefs?.setStringList('read_notifications', _readNotificationIds.toList());
+
     final updated = state.notifications.map((n) => n.copyWith(isRead: true)).toList();
     state = NotificationState(notifications: updated);
   }
 
   void clearAll() {
+    _readNotificationIds.clear();
+    _prefs?.remove('read_notifications');
     state = NotificationState(notifications: []);
   }
 
